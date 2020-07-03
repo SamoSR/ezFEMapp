@@ -1,0 +1,25 @@
+.jfx-text-field
+{
+    
+    -fx-padding: 0.0em 0em 0.0em 0em;
+}
+
+.text-field
+{
+    -fx-prompt-text-fill: transparent;
+    -fx-text-fill: black;
+}
+
+.text-field .input-line
+{
+    -fx-pref-height:1px;
+    -fx-background-color: black;
+    -fx-translate-y: 0;
+}
+
+.jfx-text-field > .input-focused-line
+{
+    -fx-background-color: rgb(101,31,255);
+    -fx-pref-height: 2px;
+    -fx-translate-y: 0;
+}

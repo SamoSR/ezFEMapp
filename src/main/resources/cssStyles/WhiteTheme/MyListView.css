@@ -1,0 +1,37 @@
+
+.jfx-list-cell-container {
+    -fx-alignment: center-left;
+}
+
+.jfx-list-cell:odd, .jfx-list-cell:even {
+    -fx-background-color: WHITE;
+}
+
+.jfx-list-cell:filled:hover {
+    -fx-text-fill: black;
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+   -fx-background-color: rgba(0, 0, 255, 0.2);
+   -fx-text-fill: black;
+}
+
+.jfx-list-cell .jfx-rippler {
+    -jfx-rippler-fill: BLUE;
+}
+
+.jfx-list-view {
+    -fx-background-color: WHITESMOKE;
+    -fx-background-insets: 0;
+    -jfx-cell-horizontal-margin: 0.0;
+    -jfx-cell-vertical-margin: 0.0;
+    -jfx-vertical-gap: 8;
+}
+
+.list-view .scroll-bar:vertical {
+   -fx-padding: 0px;
+   -fx-scale-x: 0;
+   -fx-pref-width: 0;
+   -fx-pref-height: 0;
+}
+

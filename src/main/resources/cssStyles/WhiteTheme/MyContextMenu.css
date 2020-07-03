@@ -1,0 +1,16 @@
+
+.context-menu {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0px;
+    -fx-background-radius: 0px;
+    -fx-border-radius: 0px;
+    -fx-border-color: transparent;/*
+    -fx-effect: dropshadow( one-pass-box , rgba(0,0,0,0.6) , 6, 0.0 , 0 , 0);*/
+}
+
+.menu-item:focused {
+     -fx-background: -fx-accent;
+     -fx-background-color: rgba(150,150,150,0.4);
+     -fx-text-fill: -fx-selection-bar-text;
+}
