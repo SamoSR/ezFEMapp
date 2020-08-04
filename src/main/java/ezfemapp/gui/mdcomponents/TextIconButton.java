@@ -7,14 +7,14 @@ package ezfemapp.gui.mdcomponents;
 
 import de.jensd.fx.glyphs.GlyphsDude;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import ezfemapp.gui.theme.ColorTheme;
-import ezfemapp.main.GUImanager;
 import javafx.animation.ScaleTransition;
 import javafx.event.EventHandler;
-import javafx.scene.Group;
+import javafx.geometry.Point2D;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -26,7 +26,7 @@ import javafx.util.Duration;
 
 
 
-public class TextIconButton extends StackPane{
+public class TextIconButton extends HBox{
 
     double w,h;
     Node backGround;
@@ -37,7 +37,7 @@ public class TextIconButton extends StackPane{
     EventHandler<MouseEvent> eventHandler;
     
     public TextIconButton(){
-        
+        setSpacing(5);
     }
  
     public void setEventHandler(EventHandler<MouseEvent> mouseEvent){
@@ -89,6 +89,13 @@ public class TextIconButton extends StackPane{
         st.setToY(1f);   
         st.play();
         toggleSelected=true;
+    }
+    
+    public void setBtnWidth(double w){
+        this.w=w;
+    }
+    public void setBtnHeight(double h){
+        this.h=h;
     }
     
     public void setBackGroundRectangle(double w, double h, Color color, boolean shadow){
@@ -152,9 +159,23 @@ public class TextIconButton extends StackPane{
         return h;
     }
     
-    public void construct(){
+    public void construct(){  
         this.getChildren().clear();
-        this.getChildren().addAll(backGround,icon);
+        StackPane iconcontainer = new StackPane();
+        Rectangle r = new Rectangle(30,30,Color.WHITE);
+        iconcontainer.getChildren().addAll(r,icon);
+        this.setAlignment(Pos.CENTER_LEFT);
+        this.getChildren().addAll(iconcontainer);
+
+        setMinHeight(h);
+        setPrefHeight(h);
+        setMaxHeight(h);
+        
+        setMinWidth(w);
+        setMaxWidth(w);
+        setPrefWidth(w);
+        
+        setSpacing(10);
         if(text!=null){
             this.getChildren().addAll(text);
         }
@@ -172,8 +193,8 @@ public class TextIconButton extends StackPane{
     }
 
 
-
     MouseEvent me;
+    Point2D p;
     public void addPulseAnimation(Node n, EventHandler<MouseEvent> eventHandler){
         
         ScaleTransition st = new ScaleTransition(Duration.millis(50), n);
@@ -184,7 +205,18 @@ public class TextIconButton extends StackPane{
         st2.setToX(1f);
         st2.setToY(1f);
 
-        n.setOnMouseClicked((event) -> { 
+
+        n.setOnMousePressed((event)->{
+            p = new Point2D(event.getScreenX(),event.getScreenY());     
+        });
+        
+        n.setOnMouseReleased((event) -> { 
+            Point2D p2 = new Point2D(event.getScreenX(),event.getScreenY());   
+            //IF THE FINGER OR COURSOR IS MOVED DURING THE PRESSING OPERATION, DO NOT FIRE! 
+            //NOT FOR ME: THIS "TRICK" COULD BE IMPROVED BUT MEEH
+            if(p.distance(p2)>40){
+                return;
+            }
             me = (MouseEvent)event; 
             st.play(); 
         });

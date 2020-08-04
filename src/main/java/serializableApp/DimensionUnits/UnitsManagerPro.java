@@ -20,6 +20,7 @@ import serializableApp.objects.SerializableObject;
  */
 public class UnitsManagerPro extends SerializableObject{
     
+    public static final String OBJECT_NAME="Units";
     public static final String OBJECT_TYPE="UnitsManager";
     
     //ALL UNIT CODES
@@ -28,21 +29,24 @@ public class UnitsManagerPro extends SerializableObject{
     public static final String UNITS_DENSITY = "Density";
     public static final String UNITS_CONCRETE_STRENGTH = "ConcStrength";
     public static final String UNITS_STEEL_YIELD_STRENGTH = "SteelYieldStrength";
-    public static final String UNITS_REACTION_FORCE = "ReacForce";
+    public static final String UNITS_REACTION_FORCE = "Force";
     public static final String UNITS_REACTION_MOMENT = "ReacMoment";
     public static final String UNITS_SOIL_PRESSURE= "SoilPressure";
     public static final String UNITS_REBAR_DIAMETER="RebarDiameter";
     public static final String UNITS_REBAR_SPACING="RebarSpacing";
     public static final String UNITS_REBAR_AREA="RebarArea";
+    
+    public static final String UNITS_DISPLACEMENTS="Displacement";
     public static final String UNITS_ELASTIC_MODULUS="ElasticModulus";
-    public static final String UNITS_FEM_STRESS="FEMStress";
+    public static final String UNITS_FEM_STRESS="ElementStress";
      
     public static final String UNITS_LOAD_POINT_FORCE = "LoadForce";
     public static final String UNITS_LOAD_LINEAR_FORCE = "LoadLinear";
+    public static final String UNITS_LOAD_PRESSURE = "LoadPressure";
     
-    public static final String UNITS_WEIGHT= "Weight";
-    public static final String UNITS_AREA_BIG= "AreaLarge";
-    public static final String UNITS_AREA_SMALL= "AreaSmall";
+    public static final String UNITS_WEIGHT = "Weight";
+    public static final String UNITS_AREA_BIG = "AreaLarge";
+    public static final String UNITS_AREA_SMALL = "AreaSmall";
      
     public static final String PROPNAME_UNITSLIST_DEF="UnitsListDefault";
     public static final String PROPNAME_UNITSLIST_USER="UnitsListUser";
@@ -50,11 +54,13 @@ public class UnitsManagerPro extends SerializableObject{
    
     
     public UnitsManagerPro(){
-       super(OBJECT_TYPE,OBJECT_TYPE);
+       super(OBJECT_TYPE,OBJECT_NAME);
        addProperty(new PropertyObjectList(PROPNAME_UNITSLIST_DEF,DimensionUnit.OBJECT_TYPE));
        addProperty(new PropertyObjectList(PROPNAME_UNITSLIST_USER,DimensionUnit.OBJECT_TYPE)); 
        setDefault();
        getProperty(PROPNAME_UNITSLIST_DEF).unserializableProp();
+       
+       
     }
     
     /*
@@ -77,6 +83,7 @@ public class UnitsManagerPro extends SerializableObject{
        return unitList;
     }*/
     
+    
     private static List<DimensionUnit> getDefaultUnits(){
        List<DimensionUnit> unitList = new ArrayList<>();
        unitList.add(new DimensionUnit(UNITS_GLOBAL_POSITION, "m"));
@@ -84,7 +91,7 @@ public class UnitsManagerPro extends SerializableObject{
        unitList.add(new DimensionUnit(UNITS_DENSITY, "ton/m^3"));
        unitList.add(new DimensionUnit(UNITS_CONCRETE_STRENGTH, "kN/cm^2"));
        unitList.add(new DimensionUnit(UNITS_STEEL_YIELD_STRENGTH, "kN/cm^2"));
-       unitList.add(new DimensionUnit(UNITS_REACTION_FORCE, "kN"));
+       unitList.add(new DimensionUnit(UNITS_REACTION_FORCE, "kgf"));
        unitList.add(new DimensionUnit(UNITS_REACTION_MOMENT, "kN*m"));
        unitList.add(new DimensionUnit(UNITS_SOIL_PRESSURE, "kN/m^2"));
        unitList.add(new DimensionUnit(UNITS_WEIGHT, "ton"));
@@ -96,10 +103,11 @@ public class UnitsManagerPro extends SerializableObject{
        unitList.add(new DimensionUnit(UNITS_ELASTIC_MODULUS, "kgf/cm^2"));
        unitList.add(new DimensionUnit(UNITS_LOAD_POINT_FORCE, "kN"));
        unitList.add(new DimensionUnit(UNITS_LOAD_LINEAR_FORCE, "kgf/cm"));
+       unitList.add(new DimensionUnit(UNITS_LOAD_PRESSURE, "kgf/cm^2"));
        unitList.add(new DimensionUnit(UNITS_FEM_STRESS, "kgf/cm^2"));
+       unitList.add(new DimensionUnit(UNITS_DISPLACEMENTS, "mm"));
        return unitList;
     }
-    
     
     public void setDefault(){
        PropertyObjectList unitList = (PropertyObjectList)getProperty(PROPNAME_UNITSLIST_DEF);

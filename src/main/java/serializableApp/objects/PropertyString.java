@@ -6,6 +6,8 @@
 package serializableApp.objects;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import serializableApp.commands.CommandResult;
@@ -17,6 +19,8 @@ import serializableApp.commands.CommandResult;
 public class PropertyString extends Property{
     
     private String value;
+    List<String> allowableValues = null;
+ 
     
     public PropertyString(String name, String value){
         super(name, Property.TYPE_STRING);
@@ -35,9 +39,32 @@ public class PropertyString extends Property{
         this.value = value;
     }
     
+    public void setAllowableValues(String... values){
+        allowableValues = new ArrayList<>();
+        for(String v:values){
+            allowableValues.add(v);
+        }
+    }
+    
+    public List<String>  getAllowableValues(){
+        return allowableValues;
+    }
+    
     @Override
     public CommandResult editWithString(String val){
-        return new CommandResult();
+        if(allowableValues!=null){
+            for(String allowableValue:allowableValues){
+                if(value.equals(allowableValue)){
+                    String oldVal = value;
+                    setValue(val);
+                    return new CommandResult(true,"Value changed from: "+oldVal+" to: "+val); 
+                }
+            }  
+        }else{
+
+            
+        }
+        return new CommandResult(false, "unknown course of action changing string property");
     }
     
     @Override

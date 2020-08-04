@@ -34,8 +34,9 @@ public class BlockMaterial extends SerializableObject{
         DimensionUnit dimDensity =  UnitsManagerPro.getDefault(UnitsManagerPro.UNITS_DENSITY);  
         addProperty(new PropertyDimension(PROPNAME_ELASTICMOD,210000,dimE.getRealUnits(),dimE.getID()));
         addProperty(new PropertyDimension(PROPNAME_DENSITY,50,dimDensity.getRealUnits(),dimDensity.getID()));
-        addProperty(new PropertyDouble(PROPNAME_POISSON,0.25));
+        addProperty(new PropertyDouble(PROPNAME_POISSON,0.25,0,0.5));
         addProperty(new PropertyObject(PROPNAME_COLOR, new ColorObject("colorBlock"+id, (int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255))));
+        addPropertyGroup(new EditPropertyGroup("General", PROPNAME_ID,  PROPNAME_OBJTYPE ));
         addPropertyGroup(new EditPropertyGroup("Mechanics", PROPNAME_ELASTICMOD,  PROPNAME_POISSON, PROPNAME_DENSITY ));
         addPropertyGroup(new EditPropertyGroup("Color", PROPNAME_COLOR));
         getProperty(SerializableObject.PROPNAME_DELETABLE).castToPropertyBoolean().setValue(true);
@@ -55,6 +56,14 @@ public class BlockMaterial extends SerializableObject{
     }
     public BlockMaterial setColor(Color color){
         getColor().setColor(color.getRed()*255, color.getGreen()*255, color.getBlue()*255,color.getOpacity());
+        return this;
+    }
+    public BlockMaterial setColor(Color color, double opacity){
+        getColor().setColor(color.getRed()*255, color.getGreen()*255, color.getBlue()*255,opacity);
+        return this;
+    }
+    public BlockMaterial setColor(double r255, double g255, double b255, double opacity){
+        getColor().setColor(r255, g255, b255,opacity);
         return this;
     }
     public ColorObject getColor(){

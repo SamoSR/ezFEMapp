@@ -46,7 +46,7 @@ public class FEMblockModel {
         double ymax = blocks.getNumRows()*blocks.getGridSize();
         
         double blockLength = blocks.getGridSize();
-        model.modelThicknessFactor = blocks.getAnalyticalThickness();
+        
         int eIndex=0;
         System.out.println("BlockSIze: "+blockLength);
         
@@ -65,13 +65,14 @@ public class FEMblockModel {
                 NodeFEM n3 = model.newNonRepeatedNode(b.getColumn()*blockLength+blockLength, ymax - (b.getRow()*blockLength+blockLength), 0, blockLength*0.1);
                 NodeFEM n4 = model.newNonRepeatedNode(b.getColumn()*blockLength+blockLength, ymax - (b.getRow()*blockLength), 0, blockLength*0.1);
   
-                ele2D4N_2DOF element = new ele2D4N_2DOF(n1, n2, n3, n4, new MaterialElastic(b.getMaterial().getElasticModulus(),
-                                                                                            b.getMaterial().getPoissonRatio()));
+                ele2D4N_2DOF element = new ele2D4N_2DOF(n1, n2, n3, n4, new MaterialElastic(b.getMaterial().getID(),b.getMaterial().getElasticModulus(),
+                                                                                            b.getMaterial().getPoissonRatio(),b.getMaterial().getDensity()));
+                element.thickness = blocks.getAnalyticalThickness();
  
-                System.out.println("p1: "+(ymax - (b.getRow()*blockLength)));
-                System.out.println("p2: "+(ymax - (b.getRow()*blockLength+blockLength)));
-                System.out.println("ElasticMod: "+b.getMaterial().getElasticModulus());
-                System.out.println("ElasticMod: "+b.getMaterial().getPoissonRatio());
+             // System.out.println("p1: "+(ymax - (b.getRow()*blockLength)));
+               // System.out.println("p2: "+(ymax - (b.getRow()*blockLength+blockLength)));
+               // System.out.println("ElasticMod: "+b.getMaterial().getElasticModulus());
+              //  System.out.println("ElasticMod: "+b.getMaterial().getPoissonRatio());
                 
                 model.getElements().add(element);
                 b.setIndex(eIndex);
@@ -79,6 +80,7 @@ public class FEMblockModel {
                 
                 if(b instanceof SupportBlock){
                    String type = b.getProperty(SupportBlock.PROPNAME_TYPE).castoToPropertyString().getValue();
+                   element.blocksupportElement = true;
                    switch(type){
                        case SupportBlock.SUPPORT_FIXED:
                             n1.restAll(true);
@@ -100,26 +102,43 @@ public class FEMblockModel {
                        break;   
                    }
                 }
-                
-                //SELF WEIGHT
-                double weight = 1*blockLength*blockLength*b.getMaterial().getDensity();
-                double force = weight/4;
-                
-                NodeLoad selflWeightForce = new NodeLoad(model.getLoadCase("$SW"));
-                selflWeightForce.setForceY(-force);
-                n1.addLoad(selflWeightForce);
-                n2.addLoad(selflWeightForce);
-                n3.addLoad(selflWeightForce);
-                n4.addLoad(selflWeightForce);
                 eIndex++;
             }
         }
+        
+        //CALCULTE THE WEIGHT OF EACH FINITE ELEMENT AND TRANSFORM IT INTO NODAL LOADS IN A LOAD CASE SPECIFIC FOR THE SELF WEIGHT
+        //THE WEIGHT IS DIVIDED ACCORDINGLY TO THE NUMBER OF NODES THAT ARE NOT RESTRICTED IN THE Y DIRECTION
+        for(ele2D4N_2DOF ele:model.getElements()){
+            int countRestrictionsY=0;
+            for(NodeFEM n:ele.getNodes()){
+                if(n.restY){
+                    countRestrictionsY++;
+                }
+            }
+            int nodesWithLoad = 4-countRestrictionsY;
+            if(nodesWithLoad>0){
+                
+                //SELF WEIGHT
+                double weight = blocks.getAnalyticalThickness()*blockLength*blockLength*ele.mat.density ;
+                double force = (weight/nodesWithLoad);
+                
+                NodeLoad selflWeightForce = new NodeLoad(model.getLoadCase("$SW"));
+                selflWeightForce.setForceY(-force);
+                for(NodeFEM n:ele.getNodes()){
+                    if(!n.restY){
+                        n.addLoad(selflWeightForce);
+                    }
+                }
+            }  
+        }
+        
         
         
         for(SerializableObject obj:blocks.getProperty(BlockProject.PROPNAME_LINEARLOAD_LIST).castoToPropertyObjectList().getObjectList()){
          
             BlockDistLoad load = (BlockDistLoad)obj;
-            double magnitude = load.getLoadCase().getLinearForceMagnitude()*blockLength*0.5;
+            double magnitude = ((load.getLoadCase().getLinearForceMagnitude()*blockLength* blocks.getAnalyticalThickness())/2);
+            
             int row = load.getRow();
             int col = load.getColumn();
             Point2D p1 = new Point2D(col*blockLength,ymax - (row*blockLength));
@@ -132,10 +151,7 @@ public class FEMblockModel {
                 System.out.println("null load case");
                 continue;
             }             
-            //System.out.println("addding load...");
-            ///System.out.println("magnitude: "+magnitude);
-           // System.out.println("row: "+row);
-           // System.out.println("col: "+col);
+
             switch(load.getDirection()){
                 case BlockDistLoad.LOAD_DIRECTION_UP:
                     pA = p1;
@@ -170,7 +186,7 @@ public class FEMblockModel {
                     n2 = model.getNodeByCoords(pB.getX(), pB.getY(), blockLength*0.1);
                     nodalForce = new NodeLoad(lcase);
                     nodalForce.setForceX(magnitude);
-                    System.out.println("dawer force: "+magnitude);
+                   // System.out.println("dawer force: "+magnitude);
                     if(n1!=null&&n2!=null){
                         n1.addLoad(nodalForce);
                         n2.addLoad(nodalForce);
@@ -199,8 +215,8 @@ public class FEMblockModel {
     
  
     
-    public StressFieldComputation computeColorField(List<String> loadCases, String which){
-        return new StressFieldComputation(model, loadCases, which);
+    public StressFieldComputation computeColorField(List<String> loadCases, List<String> materials,String which){
+        return new StressFieldComputation(model, loadCases, materials,which);
     }
 
     

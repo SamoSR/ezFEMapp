@@ -16,7 +16,10 @@ public class ele2D4N_2DOF implements FiniteElement2D{
     public NodeFEM[] nodes;
     public MaterialElastic mat;
     int index;
+    double thickness=1;
+    boolean blocksupportElement=false;
     boolean reducedIntegration = false;
+    
     //GAUSS COORDINATES FOR 2 POINT RULE
     public static final double gaussCoord = 1/Math.sqrt(3);
     public static final double[] eint = new double[]{-gaussCoord,-gaussCoord,+gaussCoord,+gaussCoord};
@@ -173,7 +176,7 @@ public class ele2D4N_2DOF implements FiniteElement2D{
           //GAUSSEAN MULTIPLICATION Bt * K * B * dV
           K=K.plus(B.transpose().mult(C).mult(B).scale(Jdet*weights));
         }
-        return K;
+        return K.scale(thickness);
     }
 
     

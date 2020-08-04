@@ -29,8 +29,8 @@
 }
 
 .my-custom-color .color-rect-pane .color-rect {
-    -fx-min-width: 16.666667em;
-    -fx-min-height: 16.666667em;
+    -fx-min-width: 10.666667em;
+    -fx-min-height: 10.666667em;
 }
 
 .my-custom-color .color-rect-pane .color-rect-border {

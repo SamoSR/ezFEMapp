@@ -18,9 +18,9 @@ import serializableApp.objects.SerializableObject;
 public class SupportBlock extends Block{
     
 
-    public static final String SUPPORT_FIXED="SUP_FIXED";
-    public static final String SUPPORT_PINNED_HORZ="SUP_PIN_HOR";
-    public static final String SUPPORT_PINNED_VERT="SUP_PIN_VER";
+    public static final String SUPPORT_FIXED="FIXED";
+    public static final String SUPPORT_PINNED_HORZ="PIN_HOR";
+    public static final String SUPPORT_PINNED_VERT="PIN_VER";
     
     public static String[] getSupportTypes(){
         return new String[]{SUPPORT_FIXED,SUPPORT_PINNED_HORZ,SUPPORT_PINNED_VERT};

@@ -151,13 +151,13 @@ public abstract class Project extends SerializableObject{
         if(eElement.getNodeName().equals("Object")){
             String objType = eElement.getAttribute(SerializableObject.PROPNAME_OBJTYPE);
             String objID = eElement.getAttribute(SerializableObject.PROPNAME_ID);
-            System.out.println("Object: "+objType+"   ID: "+objID);
+            //System.out.println("Object: "+objType+"   ID: "+objID);
             //CREATE THE OBJECT
             //THE ID PARAM IS ONLY NEEDED IN CERTAIN OCCASIONS 
             SerializableObject obj = getDefaultObject(objType,objID); 
             //sometimes returned obje have empty id
             obj.setID(objID);
-            System.out.println("obj created: "+obj.getID());
+            //System.out.println("obj created: "+obj.getID());
            //ACCES OBJECT PROPERTIES
             NodeList propertiesNodeList = eElement.getChildNodes();
             //READ THE PROPERTY VALES FROM THE XML
@@ -166,7 +166,7 @@ public abstract class Project extends SerializableObject{
                 Element e = (Element)n;
                 String propName = e.getAttribute("Name");
                 //String propType = e.getAttribute("Type"); 
-                System.out.println("propName: "+propName);
+                //System.out.println("propName: "+propName);
                 Property prop = obj.getProperty(propName);
                 prop.deserializeXML(this,e);
                // obj.getProperty(propName).deserializeXML(e);
@@ -244,33 +244,28 @@ public abstract class Project extends SerializableObject{
             DocumentBuilder db = dbf.newDocumentBuilder();
             // create instance of DOM
             dom = db.newDocument();
-
-
             dom.appendChild(serializeObject(dom));
 
             try {
                 Transformer tr = TransformerFactory.newInstance().newTransformer();
-                //tr.setOutputProperty(OutputKeys.INDENT, "yes");
                 tr.setOutputProperty(OutputKeys.METHOD, "xml");
                 tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                //tr.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "roles.dtd");
-                //tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
+                
                 // send DOM to file
                 if(!xml.endsWith("xml")){
                     xml+=".xml";
                 }
-                tr.transform(new DOMSource(dom),new StreamResult(new FileOutputStream(xml)));
+                
+                tr.transform(new DOMSource(dom),new StreamResult(xml));
 
             } catch (TransformerException te) {
                 System.out.println(te.getMessage());
-            } catch(FileNotFoundException fe){
-                
             }
 
         } catch (ParserConfigurationException pce) {
             System.out.println("UsersXML: Error trying to instantiate DocumentBuilder " + pce);
-        }
+        } 
+        
 
     }
     

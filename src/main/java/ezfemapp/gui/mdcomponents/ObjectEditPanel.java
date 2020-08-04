@@ -5,12 +5,14 @@
  */
 package ezfemapp.gui.mdcomponents;
 
+import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextField;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import ezfemapp.blockProject.BlockProject;
 import ezfemapp.blockProject.ColorObject;
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
-import java.util.List;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -19,6 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
+import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
@@ -141,6 +144,10 @@ public class ObjectEditPanel extends StackPane{
                             propNamesBox.getChildren().add(createText(prop.getPropertyName()));
                             propValuesBox.getChildren().add(getEditComponenet((ColorObject)object));
                         }
+                        if(object instanceof DimensionUnit){
+                            propNamesBox.getChildren().add(createText(prop.getPropertyName()));
+                            propValuesBox.getChildren().add(getEditComponenet((DimensionUnit)object));
+                        }
                         
                     break;
                 }
@@ -159,12 +166,29 @@ public class ObjectEditPanel extends StackPane{
        
         HBox box = new HBox();
         Text t = new Text(text);
-        t.setFont(new Font("Arial", fontSize));
+        t.setFont(new Font(GUImanager.defaultFont, fontSize));
         t.setFill(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT));
         box.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().add(t);
         box.setPrefHeight(rowWidth);
         return box;
+    }
+    
+    public HBox getEditComponenet(DimensionUnit obj){
+        
+        double rw = 80;
+        double rh = 25;
+        HBox box = new HBox();
+        String css = this.getClass().getResource("/cssStyles/WhiteTheme/MyCustomColorPicker.css").toExternalForm(); 
+        box.getStylesheets().add(css);
+        PropertyString p = obj.getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString();
+        if(p.getAllowableValues()!=null){
+            return getEditComponenetComboBox(p);
+            //System.out.println("NOT NULL ALOWABLE VALUES");
+        }else{
+            return getEditComponenet(p);
+        }
+        
     }
     
     public HBox getEditComponenet(ColorObject obj){
@@ -182,22 +206,24 @@ public class ObjectEditPanel extends StackPane{
             
             Bounds b = btnColor.localToScreen(btnColor.getBoundsInLocal());
             
-            Button btnOK = new Button("OK");
-            ContextMenu contextMenu = new ContextMenu();
+            PulseIconButtonCustom btnOK = new PulseIconButtonCustom("btnLoadList");
+        
             
+            btnOK.setIconFontawesome(FontAwesomeIcon.CHECK, GUImanager.topBarBurgerIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON));
+            btnOK.setBackGroundCustom(new Rectangle(228,30,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            
+            ContextMenu contextMenu = new ContextMenu();
             MyCustomColorPicker myCustomColorPicker = new MyCustomColorPicker(btnOK);
             myCustomColorPicker.setCustomColor(obj.getColorFX());
-            myCustomColorPicker.setOpacity(1);
-            
+            myCustomColorPicker.setOpacity(1);          
             CustomMenuItem itemColor = new CustomMenuItem(myCustomColorPicker);
             itemColor.setHideOnClick(false);
-            contextMenu.getItems().add(itemColor);
-            
+            contextMenu.getItems().add(itemColor);  
             contextMenu.setOnHidden(event2 -> {
                 
             });
 
-            btnOK.setOnAction((event3) -> {
+            btnOK.setEventHandler((event3) -> {
                 btnColor.setIconCustom(new Rectangle(rw,rh,myCustomColorPicker.getCustomColor()));
                 obj.setColor(myCustomColorPicker.getCustomColor().getRed()*255, 
                              myCustomColorPicker.getCustomColor().getGreen()*255, 
@@ -206,6 +232,8 @@ public class ObjectEditPanel extends StackPane{
                 contextMenu.hide();
                 gui.getCurrentScreen().update();
             });
+            btnOK.construct();
+            
             contextMenu.show(btnColor,b.getMaxX(),b.getMinY());
             
         });
@@ -216,7 +244,7 @@ public class ObjectEditPanel extends StackPane{
     
     public HBox getEditComponenet(PropertyDouble prop){
         HBox box = new HBox();
-        JFXTextField tf=new JFXTextField(""+prop.getValueString());
+        MyTextField tf=new MyTextField(""+prop.getValueString());
         tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());      
         addFocusRemovalOnEnterListener(tf);
         box.getChildren().add(tf);
@@ -226,12 +254,17 @@ public class ObjectEditPanel extends StackPane{
             if(!newValue){
                 CommandResult r = prop.editWithString(tf.getText());
                 System.out.println("command: "+r.getFirstLine());
+                
                 String newText = RoundDouble.Round5(prop.getValue());
                 tf.setText(newText);
                 if(r.getResult()){
                     //if the command was executed succesfully, call the methjod update of the current screen
                     gui.getCurrentScreen().update();
+                    gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+                }else{
+                    gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                 }
+                    
             }       
         });
         tf.setDisable(!prop.isEditable());
@@ -240,7 +273,7 @@ public class ObjectEditPanel extends StackPane{
     
     public HBox getEditComponenet(PropertyInteger prop){
         HBox box = new HBox();
-        JFXTextField tf=new JFXTextField(""+prop.getValueString());
+        MyTextField tf=new MyTextField(""+prop.getValueString());
         tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());      
         addFocusRemovalOnEnterListener(tf);
         box.getChildren().add(tf);
@@ -256,6 +289,9 @@ public class ObjectEditPanel extends StackPane{
                 if(r.getResult()){
                     //if the command was executed succesfully, call the methjod update of the current screen
                     gui.getCurrentScreen().update();
+                    gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+                }else{
+                    gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                 }
             }       
         });
@@ -265,28 +301,35 @@ public class ObjectEditPanel extends StackPane{
     
     public HBox getEditComponenet(PropertyStringID prop){
         HBox box = new HBox();
-        JFXTextField tf=new JFXTextField(""+prop.getValueString());
+        MyTextField tf=new MyTextField(""+prop.getValueString());
         tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());
         addFocusRemovalOnEnterListener(tf);
         box.getChildren().add(tf);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setPrefHeight(rowWidth);
         tf.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)->{
-            
+        String oldName = prop.getValue();
             if(!newValue){
-                System.out.println("focus lost");
+               // System.out.println("focus lost");
                 //checkl if the the name already exists
                 StringResult result2 = prop.checkDuplicatedName(tf.getText());
-                System.out.println("CHANGING : "+result2.stringValue);
+               // System.out.println("CHANGING : "+result2.stringValue);
                 if(result2.getResult()){
-                    System.out.println("CHANGING ID2");
+                    
                     //check if the name input is correct
                     CommandResult r = prop.editWithString(tf.getText());
-                    System.out.println("command: "+r.getFirstLine());
+                  //  System.out.println("command: "+r.getFirstLine());
                     if(r.getResult()){
                         //if the command was executed succesfully, call the methjod update of the current screen
                         gui.getCurrentScreen().update();
+                        System.out.println("UPDATIG ID: "+obj.getParentList().getPropertyName());
+                        gui.getApp().getBlocks().changeRef(oldName, tf.getText(), obj.getParentList().getPropertyName());
+                        gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+                    }else{
+                        gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                     }
+                }else{
+                    gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                 }
                 String newText = prop.getValue();
                 tf.setText(newText);
@@ -299,7 +342,7 @@ public class ObjectEditPanel extends StackPane{
     
     public HBox getEditComponenet(PropertyString prop){
         HBox box = new HBox();
-        JFXTextField tf=new JFXTextField(""+prop.getValueString());
+        MyTextField tf=new MyTextField(""+prop.getValueString());
         tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());
         addFocusRemovalOnEnterListener(tf);
         box.getChildren().add(tf);
@@ -310,16 +353,49 @@ public class ObjectEditPanel extends StackPane{
                 
                 //check if the name input is correct
                 CommandResult r = prop.editWithString(tf.getText());
-                System.out.println("command: "+r.getFirstLine());
+                System.out.println("command1: "+r.getFirstLine());
+                System.out.println("command2: "+tf.getText());
                 if(r.getResult()){
                     //if the command was executed succesfully, call the methjod update of the current screen
                     gui.getCurrentScreen().update();
+                    gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+                }else{
+                    gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                 }
 
                 String newText = prop.getValue();
                 tf.setText(newText);
             }       
         });
+        tf.setDisable(!prop.isEditable());
+        return box;
+    }
+    
+    public HBox getEditComponenetComboBox(PropertyString prop){
+        HBox box = new HBox();
+        //JFXTextField tf=new JFXTextField(""+prop.getValueString());
+        
+        JFXComboBox<String> tf = new JFXComboBox<String>();
+
+        for(String value:prop.getAllowableValues()){
+            tf.getItems().add(value);
+        }
+        
+        tf.getSelectionModel().select(prop.getValue());
+        
+        //tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());
+        addFocusRemovalOnEnterListener(tf);
+        box.getChildren().add(tf);
+        box.setAlignment(Pos.CENTER_LEFT);
+        box.setPrefHeight(rowWidth);
+        
+        tf.setOnAction((event)->{
+            CommandResult r = prop.editWithString(tf.getSelectionModel().getSelectedItem());
+            System.out.println("command1: "+r.getFirstLine());
+            gui.getCurrentScreen().update();
+            gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+        });
+
         tf.setDisable(!prop.isEditable());
         return box;
     }
@@ -333,9 +409,11 @@ public class ObjectEditPanel extends StackPane{
         DimensionUnit propUnits = gui.getApp().getBlocks().getUnitsManager().getUnits(outputUnitCode);
         prop.setUnitManagerRef(gui.getApp().getBlocks().getUnitsManager());
         String outputUnits = propUnits.getRealUnits();
+        
         String fotmatedText = RoundDouble.Round2(UnitUtils.convertFromKgMToUnit(prop.getValue(), outputUnits));
+        
         HBox box = new HBox(5);
-        JFXTextField tf=new JFXTextField(""+fotmatedText);
+        MyTextField tf=new MyTextField(""+fotmatedText);
         tf.getStylesheets().add(this.getClass().getResource("/cssStyles/WhiteTheme/MyTextField.css").toExternalForm());
         tf.focusedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)->{
             if(!newValue){
@@ -346,6 +424,9 @@ public class ObjectEditPanel extends StackPane{
                 if(r.getResult()){
                     //if the command was executed succesfully, call the methjod update of the current screen
                     gui.getCurrentScreen().update();
+                    gui.showNotification("Property Edited", GUImanager.NOTIFICATION_SUCCESS, 250, 30);
+                }else{
+                    gui.showNotification("Invalid Property Value", GUImanager.NOTIFICATION_WARNING, 250, 30);  
                 }
             }       
         });

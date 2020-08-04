@@ -385,6 +385,10 @@ public abstract class CanvasPane2D_1 extends StackPane{
     public void zoomOut(double factor, double x, double y){
        zoomOperator.zoom(rootNode,factor,x,y);
     }
+    public void resetScale(){
+        rootNode.setScaleX(1.0);
+        rootNode.setScaleY(1.0);
+    }
     
     public abstract void doubleTapTouch(TouchEvent event);
     public abstract void singleTapTouch(TouchEvent event);

@@ -1,0 +1,21 @@
+
+.tree-cell:selected {
+    -fx-focus-color: transparent;    
+    -fx-text-fill: black;
+    -fx-background-color: #ececec; 
+    -fx-font-size: 10pt;
+}
+.tree-cell {
+    -fx-focus-color: transparent;
+    -fx-padding: 0.75em 0.25em 0.75em 0.25em ;
+    -fx-font-size: 10pt;
+}
+.tree-cell:sub-tree-item {
+    -fx-focus-color: transparent;
+    -fx-font-size: 10pt;
+    
+}
+.tree-view{
+    -fx-focus-color: transparent;
+    -fx-font-size: 10pt;
+}

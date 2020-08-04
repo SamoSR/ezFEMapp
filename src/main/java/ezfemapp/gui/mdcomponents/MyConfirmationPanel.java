@@ -8,6 +8,7 @@ package ezfemapp.gui.mdcomponents;
 import com.jfoenix.controls.JFXPopup;
 import com.jfoenix.controls.JFXRippler;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
 import javafx.geometry.Pos;
 import javafx.scene.layout.AnchorPane;
@@ -39,14 +40,14 @@ public class MyConfirmationPanel {
         double btnHeight= 40;
         double iconSize = 20;
         int textSize = 12;
-        String font = "Arial";
+        String font = GUImanager.defaultFont;
         Color btnColor = Color.TRANSPARENT;
-        Color iconColor = Color.DARKGRAY;
+        Color iconColor = GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN);
         Color textColor = Color.BLACK;
         
         //SAVE ICON
-        TextIconButton btn = new TextIconButton(); 
-        btn.setTextElement("", font, textSize, textColor);
+        PulseIconButtonCustom btn = new PulseIconButtonCustom(""); 
+        //btn.setTextElement("", font, textSize, textColor);
         btn.setBackGroundCustom(new Rectangle(btnWidth,btnHeight,btnColor));
         btn.setIconFontawesome(FontAwesomeIcon.CHECK, iconSize+"px",iconColor); 
         btn.adjustIconPosition(0, 0);
@@ -65,8 +66,8 @@ public class MyConfirmationPanel {
         
         
         //SAVE ICON
-        btn = new TextIconButton(); 
-        btn.setTextElement("", font, textSize, textColor);
+        btn = new PulseIconButtonCustom(""); 
+       // btn.setTextElement("", font, textSize, textColor);
         btn.setBackGroundCustom(new Rectangle(btnWidth,btnHeight,btnColor));
         btn.setIconFontawesome(FontAwesomeIcon.REMOVE, iconSize+"px",iconColor); 
         btn.adjustIconPosition(0, 0);
@@ -95,7 +96,7 @@ public class MyConfirmationPanel {
     public void setMessage(String text){
         double offset = 2;
         double btnHeight= 40;
-        Text txt = utilsGUI.create(text, "Arial", 13, Color.BLACK);
+        Text txt = utilsGUI.create(text, GUImanager.defaultFont, 13, Color.BLACK);
         HBox box = new HBox(txt);
         box.setAlignment(Pos.CENTER);
         AnchorPane.setRightAnchor(box, offset);

@@ -25,6 +25,8 @@ public class MyColoredCheckBox extends JFXCheckBox{
         String strColor = "rgb("+(color.getRed()*255)+","+(color.getGreen()*255)+","+(color.getBlue()*255)+")";
         List<String> styles = new ArrayList<>();
         styles.add("-jfx-checked-color: "+strColor+";");
+        styles.add("-jfx-font-size: 10pt;");
+        styles.add("-fx-font-size: 10pt;");
         styles.add("-jfx-unchecked-color: "+strColor+";");
         String allStyles="";
         for(String sty:styles){

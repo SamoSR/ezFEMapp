@@ -13,7 +13,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -39,6 +39,7 @@ public class MyCustomColorPicker extends VBox {
     private final Pane colorBar;
     private final Pane colorRectOverlayOne;
     private final Pane colorRectOverlayTwo;
+    
     private Region colorRectIndicator;
     private final Region colorBarIndicator;
     private Pane newColorRect;
@@ -54,10 +55,11 @@ public class MyCustomColorPicker extends VBox {
         }
     };
 
-    
-    public MyCustomColorPicker(Button btnOK) {
+    double size = 100;
+    public MyCustomColorPicker(Node btnOK) {
         
         getStyleClass().add("my-custom-color");
+        
         VBox box = new VBox();
         box.getStyleClass().add("color-rect-pane");
         
@@ -132,6 +134,7 @@ public class MyCustomColorPicker extends VBox {
             sat.divide(100).multiply(colorRect.widthProperty()));
         colorRectIndicator.layoutYProperty().bind(
             Bindings.subtract(1, bright.divide(100)).multiply(colorRect.heightProperty()));
+        
         colorBarIndicator.layoutXProperty().bind(
             hue.divide(360).multiply(colorBar.widthProperty()));
         colorRectOpacityContainer.opacityProperty().bind(alpha.divide(100));
@@ -159,16 +162,42 @@ public class MyCustomColorPicker extends VBox {
 
         colorBar.getChildren().setAll(colorBarIndicator);
         colorRectOpacityContainer.getChildren().setAll(colorRectHue, colorRectOverlayOne, colorRectOverlayTwo);
+        
         colorRect.getChildren().setAll(colorRectOpacityContainer, colorRectBlackBorder, colorRectIndicator);
         
         VBox.setVgrow(colorRect, Priority.SOMETIMES);
         
-        btnOK.setPrefWidth(Double.MAX_VALUE);
-        btnOK.setPrefHeight(40);
-        VBox.setVgrow(btnOK, Priority.ALWAYS);
-        btnOK.setFocusTraversable(false);
-     
-       // btn.setPrefSize(colorBarIndicator.getWidth(), colorBarIndicator.getHeight());
+        /*
+       colorRectIndicator.setPrefHeight(size);
+     colorRectIndicator.setMaxHeight(size);
+     colorRectIndicator.setMinWidth(size);
+     */
+        /*
+       colorRect.setPrefHeight(size);
+       colorRect.setMaxHeight(size);
+       colorRect.setMinHeight(size);
+       
+       colorRectOpacityContainer.setMaxHeight(size);
+       colorRectOpacityContainer.setPrefHeight(size);
+       colorRectOpacityContainer.setMinHeight(size);
+       
+       colorRectBlackBorder.setMaxHeight(size);
+       colorRectBlackBorder.setPrefHeight(size);
+       colorRectBlackBorder.setMinHeight(size);
+
+       colorRectHue.setPrefHeight(size);
+       colorRectHue.setMaxHeight(size);
+       colorRectHue.setMinHeight(size);
+       
+       colorRectOverlayOne.setPrefHeight(size);
+       colorRectOverlayOne.setMaxHeight(size);
+       colorRectOverlayOne.setMinHeight(size);
+       
+       colorRectOverlayTwo.setPrefHeight(size);
+       colorRectOverlayTwo.setMaxHeight(size);
+       colorRectOverlayTwo.setMinHeight(size);
+     */
+       
         box.getChildren().addAll(colorBar, colorRect, newColorRect,btnOK);
 
         getChildren().add(box);

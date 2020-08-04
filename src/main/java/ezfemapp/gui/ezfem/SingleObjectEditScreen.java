@@ -45,7 +45,7 @@ public class SingleObjectEditScreen extends AppScreen{
         //BUTTON GO BACK
         PulseIconButtonCustom btnBack = new PulseIconButtonCustom("btnGoBack");
         btnBack.setBackGroundRectangle(42, 42, Color.TRANSPARENT, false);
-        btnBack.setIconFontawesome(FontAwesomeIcon.CHEVRON_LEFT, GUImanager.appBarIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnBack.setIconFontawesome(FontAwesomeIcon.CHEVRON_LEFT, GUImanager.topBarBurgerIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         btnBack.setEventHandler((event)->{
             gui.loadScreen(ModelingScreen.ID);
             //ModelingScreen modScreen = (ModelingScreen)gui.getCurrentScreen();
@@ -266,6 +266,9 @@ public class SingleObjectEditScreen extends AppScreen{
     
     @Override
     public void update(String... args){
+        getGUI().getApp().getBlocks().referenceParentToProperties();
+        getGUI().getApp().getBlocks().initializeReferenceProperties();
+        getGUI().getApp().getBlocks().updateReferenceProperties();
         //updateListLabels();
         //updateListColors();
     }

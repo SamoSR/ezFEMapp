@@ -17,8 +17,7 @@ public class FEMmodelPlaneStress {
     
     int nodeCount=0;
     int eleCount=0;
-    double modelThicknessFactor;
-    
+
     String name;
     ArrayList<ele2D4N_2DOF> finiteElements;
     ArrayList<ele2D_TRUSS> frameElements;
@@ -90,7 +89,17 @@ public class FEMmodelPlaneStress {
     public ArrayList<NodeFEM> getNodes(){
         return nodes;
     }
-    
+    public ele2D4N_2DOF getElementByIndex(int index){
+        //System.out.println("looking for: "+index);
+        for(ele2D4N_2DOF e:finiteElements){
+            //System.out.println("int; "+e.index);
+            if(e.index==index){
+               // System.out.println("found it! ");
+                return e;
+            }
+        }
+        return null;
+    }
     private int nx,ny;
     public void createRectangle(double dimX, double dimY, int nx, int ny, double E, double v, double pressureX, double pressureY,boolean reducedInt){
         

@@ -7,9 +7,11 @@ package ezfemapp.gui.screen;
 
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 
 /**
  *

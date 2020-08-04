@@ -33,8 +33,7 @@ public class SerializableObject {
 
     //store properties (
     HashMap<String,Property> properties;
-    
-    
+
     //THIS IS COMPUTED IN THE CONSTRUCTOR OF EACH OBJECT AND ITS DONE BY THE PROGRAMMER,
     //DOES NOT NEED SERIALIZATION 
     List<EditPropertyGroup> propertyHierachy;
@@ -49,8 +48,6 @@ public class SerializableObject {
                                                             SerializableObject.PROPNAME_DELETABLE,
                                                             SerializableObject.PROPNAME_ID,
                                                             SerializableObject.PROPNAME_OBJTYPE};
-    
-    
     
     public HashMap<String,Property> getPropertyHashMap(){
         return properties;
@@ -96,10 +93,10 @@ public class SerializableObject {
         addProperty(new PropertyString(PROPNAME_CODEID, type)); //SET MANUALLY FOR A DIFERENT VALUE
         addProperty(new PropertyBoolean(PROPNAME_DELETABLE, false)); //SET MANUALLY FOR A DIFERENT VALUE
         
-        createDefaultPropGroup();
+        //createDefaultPropGroup();
     }
     
-    private void createDefaultPropGroup(){
+    public void createDefaultPropGroup(){
         addPropertyGroup(new EditPropertyGroup("General", PROPNAME_ID,PROPNAME_OBJTYPE));
     }
     

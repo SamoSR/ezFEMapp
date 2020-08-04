@@ -5,6 +5,8 @@
  */
 package serializableApp.objects;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import serializableApp.commands.CommandManager;
@@ -20,10 +22,16 @@ public class PropertyStringID extends Property{
     
     public static final String PROPNAME_BINDED_TO_REFPROP="Bindedid_";
     private String value;
-     
+    
+    List<String> reservedNames = new ArrayList<>();
+    
+    
     public PropertyStringID(String value){
         super(SerializableObject.PROPNAME_ID, Property.TYPE_STRINGID);
         this.value=value;
+        reservedNames.add("null");
+        reservedNames.add("NULL");
+        
     }
     
     public String getRealValue(){
@@ -59,7 +67,10 @@ public class PropertyStringID extends Property{
         if(id.equals("default")){
             return new CommandResult(false, "The ID <default> is reserved and cannot be used");
         }
-        
+        if(reservedNames.contains(id)){
+            return new CommandResult(false, "The ID <default> is reserved and cannot be used");
+        }
+            
         
         return new CommandResult(true,"");
     }

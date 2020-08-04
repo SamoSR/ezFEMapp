@@ -8,6 +8,7 @@ package ezfemapp.rendering.canvas;
 import ezfemapp.blockProject.Block;
 import ezfemapp.blockProject.BlockDistLoad;
 import ezfemapp.blockProject.BlockProject;
+import ezfemapp.blockProject.ModelingAction;
 import ezfemapp.blockProject.SupportBlock;
 import ezfemapp.gui.ezfem.ModelingScreen;
 import ezfemapp.rendering.shapes.ShapeDrawer;
@@ -41,7 +42,7 @@ public class ModelRenderer extends CanvasPane2D_1{
         this.modeling = screen;
         this.blocks = screen.getGUI().getApp().getBlocks();
         //ZOOM TO THE SCREEN SIZE
-        double paneWidth = screen.getGUI().getWidth().doubleValue();
+        double paneWidth = modeling.getGUI().getWidth().doubleValue();
         double w=(blocks.getNumCols()+4)*gridRenderSize;
         double factor = paneWidth/w;
         zoomOut(factor,0, 0);
@@ -53,7 +54,7 @@ public class ModelRenderer extends CanvasPane2D_1{
         this.blocks = modeling.getGUI().getApp().getBlocks();
         int nrows = blocks.getNumRows();
         int ncols = blocks.getNumCols();
-        grid = ShapeDrawer.draw2Dmesh(0, ncols*gridRenderSize, 0, nrows*gridRenderSize, gridRenderSize, gridRenderSize, Color.GRAY);
+        grid = ShapeDrawer.draw2Dmesh(0, ncols*gridRenderSize, 0, nrows*gridRenderSize, gridRenderSize, gridRenderSize, Color.LIGHTGRAY);
         addGeometry(grid); 
         
         getRootNode().getChildren().remove(allBlocks);
@@ -134,7 +135,16 @@ public class ModelRenderer extends CanvasPane2D_1{
             default:    
         }
 
-        updateBlockGeometries();
+        updateRenderWithLastAction();
+    }
+    
+    public void zoomExtends(){
+        resetCamera();
+        double paneWidth = modeling.getGUI().getWidth().doubleValue();
+        double w=(blocks.getNumCols()+4)*gridRenderSize;
+        double factor = paneWidth/w;
+        zoomOut(factor,0,0);
+        translateRoot((2*gridRenderSize)*factor, (2*gridRenderSize)*factor);
     }
     
     private void TapToRemoveBlock_ByDoubleTap(double x, double y){
@@ -167,7 +177,7 @@ public class ModelRenderer extends CanvasPane2D_1{
             default:    
         }
        
-        updateBlockGeometries();
+        updateRenderWithLastAction();
         //renderAllBlocks();
     }
     /*
@@ -218,7 +228,7 @@ public class ModelRenderer extends CanvasPane2D_1{
                 break;
             default:    
         }
-        updateBlockGeometries();
+        updateRenderWithLastAction();
         //renderAllBlocks();
     }
     
@@ -276,7 +286,8 @@ public class ModelRenderer extends CanvasPane2D_1{
         int[] chunkSizeInt = getChunkSize(chunkSize);
         //System.out.println("rows: "+chunkSizeInt[0]);
         //System.out.println("cols: "+chunkSizeInt[1]);
-        blocks.removeAllLoadsAt(row, col,chunkSizeInt[0],chunkSizeInt[1]);
+        //blocks.removeAllLoadsAt(row, col,chunkSizeInt[0],chunkSizeInt[1]);
+        blocks.setLoadAt(row, col,chunkSizeInt[0],chunkSizeInt[1],null,null);
     }
 
     
@@ -288,7 +299,7 @@ public class ModelRenderer extends CanvasPane2D_1{
         }
         
         getRootNode().getChildren().addAll(loadGeometry);
-        loadGeometry.toBack();
+        loadGeometry.toFront();
         grid.toBack();
     }
     
@@ -300,22 +311,43 @@ public class ModelRenderer extends CanvasPane2D_1{
             allBlocks.getChildren().add(b.getGometry());
  
         }
-        updateBlockGeometries();
+        updateRenderWithLastAction();
         renderLoads();
         grid.toBack();
         
     }
     
   
-    
-    public void updateBlockGeometries(){ 
-        for(Block b:blocks.getLastAdded()){
+   
+    public void updateRenderWithLastAction(){ 
+        ModelingAction lastAction = blocks.getLastAction();
+        if(lastAction==null){
+            return;
+        }
+        for(Block b:lastAction.addedBlocks){
             if(!allBlocks.getChildren().contains(b.getGometry())){
                 allBlocks.getChildren().add(b.getGometry());
             }
           
         }
-        for(Block b :blocks.getLastRemoved()){
+        for(Block b :lastAction.removedBlocks){
+            allBlocks.getChildren().remove(b.getGometry());
+        }
+        renderLoads();
+    }
+    
+    public void updateRenderWithLastUndoAction(){ 
+        ModelingAction lastAction = blocks.getLastUndoAction();
+        if(lastAction==null){
+            return;
+        }
+        for(Block b:lastAction.addedBlocks){
+            if(!allBlocks.getChildren().contains(b.getGometry())){
+                allBlocks.getChildren().add(b.getGometry());
+            }
+          
+        }
+        for(Block b :lastAction.removedBlocks){
             allBlocks.getChildren().remove(b.getGometry());
         }
         renderLoads();

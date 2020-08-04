@@ -24,14 +24,17 @@ public class UnitUtils {
 	static double m_to_ft = 3.2808399;
 	
 	//CONVERSION FROM THE STORED UNIT OF FORCE TO THE OUTPUT UNIT OF FORCE
+        static double kg_to_g=1000;
 	static double kg_to_kg=1;
 	static double kg_to_ton=0.001;
 	static double kg_to_N=9.80665002864;
-	//static double kg_to_KN=0.00980665002864;
-        static double kg_to_KN=9.80665002864e-3;
+
 	static double kg_to_lb=2.20462262;
 	static double kg_to_Klb=0.00220462262;
+        
+        static double kg_to_KN=9.80665002864e-3;
         static double kg_to_GN=9.80665002864e-9;
+        static double kg_to_MN=9.80665002864e-6;
         
 	static double kg_to_slug=.0685218;
 	
@@ -68,19 +71,42 @@ public class UnitUtils {
 	public static boolean compatibleUnits(String units1, String units2){
             
             if(units1.equals("psi")){
-                    units1 ="lb/in^2";
+                units1 ="lb/in^2";
             }
             if(units1.equals("ksi")){
                 units1 ="klb/in^2";
             }
-            
+            if(units1.equals("GPa")){
+                units1 ="GN/m^2";
+            }
+            if(units1.equals("MPa")){
+                units1 ="MN/m^2";
+            }
+            if(units1.equals("kPa")){
+                units1 ="kN/m^2";
+            }
+            if(units1.equals("Pa")){
+                    units1 ="N/m^2";
+            }
             if(units2.equals("psi")){
-                    units2 ="lb/in^2";
+                units2 ="lb/in^2";
             }
             if(units2.equals("ksi")){
                 units2 ="klb/in^2";
             }
-              
+            if(units2.equals("GPa")){
+                units2 ="GN/m^2";
+            }
+            if(units2.equals("MPa")){
+                units2 ="MN/m^2";
+            }
+            if(units2.equals("kPa")){
+                units2 ="kN/m^2";
+            }
+            if(units2.equals("Pa")){
+                    units2 ="N/m^2";
+             }
+            
             String[] parts = units1.split("/");
             String topString="";
             String botString="";
@@ -118,8 +144,8 @@ public class UnitUtils {
                     topString = parts[0];
                     botString = parts[1];
             }
-            ArrayList<Unit> unitsTop2 = new ArrayList<>();	
-            ArrayList<Unit> unitsBot2 = new ArrayList<>();	
+            ArrayList<Unit> unitsTop2;	
+            ArrayList<Unit> unitsBot2;	
             unitsTop2 = splitMultiplication(topString);
             unitsBot2 = splitMultiplication(botString);
      
@@ -224,6 +250,18 @@ public class UnitUtils {
             if(units.equals("ksi")){
                 units ="klb/in^2";
             }
+             if(units.equals("GPa")){
+                units ="GN/m^2";
+            }
+            if(units.equals("MPa")){
+                units ="MN/m^2";
+            }
+            if(units.equals("kPa")){
+                units ="kN/m^2";
+            }
+            if(units.equals("Pa")){
+                    units ="N/m^2";
+                }
             
             String[] parts = units.split("/");
             String topString="";
@@ -265,6 +303,18 @@ public class UnitUtils {
                 }
                 if(units.equals("ksi")){
                     units ="klb/in^2";
+                }
+                if(units.equals("GPa")){
+                    units ="GN/m^2";
+                }
+                if(units.equals("MPa")){
+                    units ="MN/m^2";
+                }
+                if(units.equals("kPa")){
+                    units ="kN/m^2";
+                }
+                if(units.equals("Pa")){
+                    units ="N/m^2";
                 }
             
 		String[] parts = units.split("/");
@@ -309,6 +359,25 @@ public class UnitUtils {
 	}
 	
 	public static double convertFromKgMToUnit(double value, String units){
+            
+                if(units.equals("psi")){
+                    units ="lb/in^2";
+                }
+                if(units.equals("ksi")){
+                    units ="klb/in^2";
+                }
+                if(units.equals("GPa")){
+                    units ="GN/m^2";
+                }
+                if(units.equals("MPa")){
+                    units ="MN/m^2";
+                }
+                if(units.equals("kPa")){
+                    units ="kN/m^2";
+                }
+                if(units.equals("Pa")){
+                    units ="N/m^2";
+                }
             
                 if(units==null){
                     return value;
@@ -378,7 +447,11 @@ public class UnitUtils {
                 case "kN/m^2":
                     return "kPa";  
                 case "N/m^2":
-                    return "Pa";     
+                    return "Pa"; 
+                case "lb/in^2":
+                    return "psi";
+                case "klb/in^2":
+                    return "ksi";     
                 default:
                     return realUnits;
             }

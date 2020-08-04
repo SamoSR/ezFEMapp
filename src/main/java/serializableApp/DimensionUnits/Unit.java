@@ -35,6 +35,9 @@ public class Unit {
 	public double getConversionFactorFromKgMToUnit(){
             double factor = 1;
             switch(unit){
+                case "MN":
+                        factor = Math.pow( UnitUtils.kg_to_MN, exp);
+                        break;
                 case "GN":
                         factor = Math.pow( UnitUtils.kg_to_GN, exp);
                         break;
@@ -44,9 +47,13 @@ public class Unit {
                 case "kN":
                         factor = Math.pow( UnitUtils.kg_to_KN, exp);
                         break;
+                case "g":
+                        factor = Math.pow( UnitUtils.kg_to_g, exp);	
+                        break;        
                 case "lb":
                         factor = Math.pow( UnitUtils.kg_to_lb, exp);	
                         break;
+                        
                 case "klb":
                         factor = Math.pow( UnitUtils.kg_to_Klb, exp);	
                         break;
@@ -91,12 +98,15 @@ public class Unit {
             
             force.add("N");
             force.add("kN");
-            force.add("GN");
+            force.add("MN");
+            force.add("GN"); 
             force.add("lb");
             force.add("klb");
             force.add("kgf");
             force.add("tonf");
+            force.add("g");
             
+            mass.add("g");
             mass.add("kg");
             mass.add("ton");
             mass.add("slug");
@@ -132,11 +142,13 @@ public class Unit {
             List<String> allUnits = new ArrayList<>(); 
             allUnits.add("N");
             allUnits.add("kN");
+            allUnits.add("MN");
             allUnits.add("GN");
             allUnits.add("lb");
             allUnits.add("klb");
             allUnits.add("kgf");
             allUnits.add("kg");
+            allUnits.add("g");
             allUnits.add("tonf");
             allUnits.add("ton");
             allUnits.add("slug");
@@ -156,56 +168,9 @@ public class Unit {
             return false;
         }
         
+        
 	public double getConversionFactorFromUnitToKgM(){
-            double factor = 1;
-            /*
-            switch(unit){
-                case "N":
-                        factor = Math.pow( 1/UnitUtils.kg_to_N, exp);
-                        break;
-                case "GN":
-                        factor = Math.pow( 1/UnitUtils.kg_to_N, exp);
-                        break;
-                case "kN":
-                        factor = Math.pow( 1/UnitUtils.kg_to_KN, exp);
-                        break;
-                case "lb":
-                        factor = Math.pow( 1/UnitUtils.kg_to_lb, exp);	
-                        break;
-                case "klb":
-                        factor = Math.pow( 1/UnitUtils.kg_to_Klb, exp);	
-                        break;
-                case "tonf":
-                case "ton":
-                        factor = Math.pow( 1/UnitUtils.kg_to_ton, exp);	
-                        break;        
-                case "slug":
-                        factor = Math.pow( 1/UnitUtils.kg_to_slug, exp);	
-                        break;
-                case "mm":
-                        factor = Math.pow( 1/UnitUtils.m_to_mm, exp);
-                        break;
-                case "cm":
-                        factor = Math.pow( 1/UnitUtils.m_to_cm, exp);
-                        break;
-                case "m":
-                        factor = Math.pow( 1/UnitUtils.m_to_m, exp);	
-                        break;
-                case "in":
-                        factor = Math.pow( 1/UnitUtils.m_to_in, exp);	
-                        break;
-                case "ft":
-                        factor = Math.pow( 1/UnitUtils.m_to_ft, exp);	
-                        break;	
-                case "kg":
-                case "kgf":
-                        factor = Math.pow( 1/UnitUtils.kg_to_kg, exp);	
-                        break;        
-                default:
-                        factor = 1;
-            }*/
-            factor = 1/getConversionFactorFromKgMToUnit();
-            return factor;
+            return 1/getConversionFactorFromKgMToUnit();
 	}
 	
 

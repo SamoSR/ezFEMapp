@@ -9,15 +9,17 @@
 
 .jfx-list-cell:filled:hover {
     -fx-text-fill: black;
+    -fx-font-size: 10pt;
 }
 
 .list-cell:filled:selected:focused, .list-cell:filled:selected {
-   -fx-background-color: rgba(0, 0, 255, 0.2);
+   -fx-background-color: rgba(100, 100, 100, 0.1);
    -fx-text-fill: black;
+   -fx-font-size: 10pt;
 }
 
 .jfx-list-cell .jfx-rippler {
-    -jfx-rippler-fill: BLUE;
+    -jfx-rippler-fill: LIGHTGRAY;
 }
 
 .jfx-list-view {
@@ -26,6 +28,7 @@
     -jfx-cell-horizontal-margin: 0.0;
     -jfx-cell-vertical-margin: 0.0;
     -jfx-vertical-gap: 8;
+    -fx-font-size: 10pt;
 }
 
 .list-view .scroll-bar:vertical {

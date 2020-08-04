@@ -6,36 +6,37 @@
 package ezfemapp.main;
 
 import com.jfoenix.controls.JFXDecorator;
-import com.jfoenix.controls.JFXHamburger;
-import com.jfoenix.controls.JFXListView;
-import com.jfoenix.controls.JFXPopup;
-import com.jfoenix.controls.JFXPopup.PopupHPosition;
-import com.jfoenix.controls.JFXPopup.PopupVPosition;
-import com.jfoenix.controls.JFXRippler;
-import com.jfoenix.controls.JFXRippler.RipplerMask;
-import com.jfoenix.controls.JFXRippler.RipplerPos;
+import com.jfoenix.controls.JFXSnackbar;
+
 
 import ezfemapp.blockProject.BlockProject;
+import ezfemapp.documentation.DocumentationScreen;
+import ezfemapp.gui.ezfem.AboutScreen;
 import ezfemapp.gui.ezfem.AnalysisScreen;
 import ezfemapp.gui.ezfem.ObjListEditScreen;
 import ezfemapp.gui.ezfem.ModelingScreen;
 import ezfemapp.gui.ezfem.SidePane;
-import ezfemapp.gui.ezfem.SingleObjectEditScreen;
-import ezfemapp.gui.mdcomponents.MyConfirmationPanel;
+import ezfemapp.gui.ezfem.SplashScreen;
+import ezfemapp.gui.ezfem.VariousObjectEditScreen;
+import ezfemapp.gui.mdcomponents.keyboard.ScreenKeyBoard;
+import ezfemapp.gui.mdcomponents.utilsGUI;
 import ezfemapp.gui.screen.AppScreen;
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.gui.theme.ThemeWhite;
-import java.io.File;
 import java.util.HashMap;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
-import serializableApp.objects.Project;
 
 /**
  *
@@ -44,11 +45,21 @@ import serializableApp.objects.Project;
 public class GUImanager {
     
     public static ColorTheme colorTheme;
-    public static double toolBoxIconSize = 30;
+    
+    public static double toolBoxIconSize = 32;
     public static double topBarHeight = 42;
-    public static double topBarTextSize = 16;
+    public static double topBarTextSize = 18;
+    public static double topBarBurgerIconSize = 20;
+    
+    public static double sidePanelIconSize = 16;
+    
+    public static double hollowCircleButtonRadius = 16;
+    public static double hollowCircleIconSize = 20;
+    
     public static double sidePanelWidth = 250;
     public static double appBarIconSize = 28;
+    
+    public static String defaultFont = "Roboto";
     
     public static final String SCREEN_SETTINGS="Project Settings";
     
@@ -58,183 +69,48 @@ public class GUImanager {
     String mainScreen = ModelingScreen.ID;
     String currentScreen="";
     SidePane sidePane;
-    MyApp2 app;
+    BasicApp app;
     
     String currentProjectPath="";
+    String currentProjectFolder = "";
    // boolean ignoreTouch=false;
 
     ReadOnlyDoubleProperty width;
     ReadOnlyDoubleProperty height;
     Stage primaryStage;
     
-    public GUImanager(MyApp2 app,Stage primaryStage){
+    public static ScreenKeyBoard keyboard;
+    
+    public GUImanager(BasicApp app,Stage primaryStage, boolean maximized){
         this.primaryStage = primaryStage;
         this.app = app;
-        initialize();
-        initializeDeskTop(primaryStage);
-        
+        initialize(maximized);
         width = mainScene.widthProperty();
-        height = mainScene.heightProperty(); 
-    }
-    
-    public void newDefaultProject(){
-
-        MyConfirmationPanel confirmPanel = new MyConfirmationPanel();
-        confirmPanel.setMessage("Delete everything to create\na new default project?");
-        confirmPanel.show(this);
-
-        confirmPanel.getPopUp().setOnHidden((event)->{
-            if(confirmPanel.getResult()){
-                BlockProject newProject = new BlockProject("NewProject");
-                newProject.createDefaultProject();
-                getApp().setProject(newProject); 
-                createScreens();
-                
-                //ModelingScreen screen = (ModelingScreen)screens.get(ModelingScreen.ID);
-                //screen.resetScreen();
-                
-                getSidePanel().closePanel();
-            }
-        });
-        /*
-        JFXListView<String> list = new JFXListView<>();
-        for(int i = 1 ; i < 5 ; i++) {
-            list.getItems().add("Item " + i);
-        }
-        double w = getWidth().doubleValue()/2-confirmPanel.getBtnWidth()/2;
-        double h = getHeight().doubleValue()/2-confirmPanel.getBtnHeight()/2;
-        JFXPopup popup = new JFXPopup();
-        popup.setPopupContent(confirmPanel);
-        popup.show(root, PopupVPosition.TOP, PopupHPosition.LEFT,w,h);
-        */
-    }
-    
-    
-    
-    public void openProjectFromLocalFile(){
-        switch(app.platform){
-            case MyApp2.PLATFORM_DESKTOP:
-                
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Load Project");
-                File file = fileChooser.showOpenDialog(primaryStage);
-                if (file != null) {
-                   Project proy = getApp().getBlocks().deserializeProject(file.getAbsolutePath());
-                   if(proy!=null){
-                       if(proy instanceof BlockProject){
-                           
-                            currentProjectPath = file.getAbsolutePath();
-                            BlockProject blocks = (BlockProject)proy;
-                            getApp().setProject(blocks);
-                            createScreens();
-                            /*
-                            ModelingScreen screen = (ModelingScreen)screens.get(ModelingScreen.ID);
-                            screen.resetScreen();*/
-                            getSidePanel().closePanel();
-                       }
-                   }
-                    //getApp().loadProject(proy);
-                    //return new CommandResult(true,"Project opened: "+file.getAbsolutePath());
-                }
-                return;
-            case MyApp2.PLATFORM_ANDROID:    
-                return;
-            default:
-                return;
-        }
-    }
-    
-    public void saveProjectToLocalFile(){
-  
-        switch(app.platform){
-            case MyApp2.PLATFORM_DESKTOP:
-                
-                File currentPath = new File(currentProjectPath);
-                if(currentPath.exists()){
-                    getApp().getBlocks().serializeProject(currentPath.getAbsolutePath());
-                }else{
-                    FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle("Save Project");
-                    File file = fileChooser.showSaveDialog(primaryStage);
-                    if (file != null) {
-                        getApp().getBlocks().serializeProject(file.getAbsolutePath());
-                        getSidePanel().closePanel();
-                    }
-                }
-                
-                return;
-            case MyApp2.PLATFORM_ANDROID:    
-                return;
-            default:
-                return;
-        }
+        height = mainScene.heightProperty();
+        createScreens(SplashScreen.ID);
         
+        keyboard = new ScreenKeyBoard(width.doubleValue(),height.doubleValue());
+        keyboard.createOnContainer(root);
+       
     }
     
-    public void saveAs(){
-        switch(app.platform){
-            case MyApp2.PLATFORM_DESKTOP:
-                
-                File currentFile = new File(currentProjectPath);
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Save Project");
-                fileChooser.setInitialDirectory(currentFile);
-                File file = fileChooser.showSaveDialog(primaryStage);
-                
-                if (file != null) {
-                    getApp().getBlocks().serializeProject(file.getAbsolutePath());
-                   
-                }
-                
-                return;
-            case MyApp2.PLATFORM_ANDROID:    
-                return;
-            default:
-                return;
-        }
-        
-    }
-    
-    public void saveProjectToCurrentPath(){
-        File file = new File(currentProjectPath);
-        if(file.exists()){
-            getApp().getBlocks().serializeProject(file.getAbsolutePath());
-        }
-    }
-    
-    public AnchorPane getRootPane(){
-        return root;
-    }
-    
-    public SidePane getSidePanel(){
-        return sidePane;
-    }
-    
-    public GUImanager(MyApp2 app){
+    /*
+    public GUImanager(BasicApp app, ReadOnlyDoubleProperty w,ReadOnlyDoubleProperty h){
         this.app = app;
+        width = w;
+        height = h;
         initialize();
-    }
+        createScreens(SplashScreen.ID);
+    }*/
     
-    public void setScreenWidthAndHeight(ReadOnlyDoubleProperty w,ReadOnlyDoubleProperty h){
-        width=w;
-        height=h;
-    }
-    
-    public ReadOnlyDoubleProperty getWidth(){
-        return width;
-    }
-    public ReadOnlyDoubleProperty getHeight(){
-        return height;
-    }
-    
- 
-    
- 
-    
-    private void initialize(){
-        
+    private void initialize(boolean maximized){
         
         root = new AnchorPane();
+        
+        //LOAD FONT
+        String css = this.getClass().getResource("/cssStyles/WhiteTheme/robotoFont.css").toExternalForm(); 
+        root.getStylesheets().add(css);
+        
         colorTheme = new ThemeWhite();
         sidePane = new SidePane(this);
         
@@ -249,23 +125,114 @@ public class GUImanager {
             }
            
         });
-      
-    }
-    
- 
-    
-    
-    private void initializeDeskTop(Stage primaryStage){
+        
+        //INITIAL SIZE
+        int w = 600;
+        int h = 400;
+        if(maximized){
+            Rectangle2D r = Screen.getPrimary().getVisualBounds();
+            r.getWidth();
+            r.getHeight();      
+        }
+        
+        //CREATE THE SCENE SIZE OF THE SCREEN IF ITS MAXIMIZED
         JFXDecorator decorator = new JFXDecorator(primaryStage,root);
-        mainScene = new Scene(decorator, 600, 400);
+        mainScene = new Scene(decorator, w, h);
         primaryStage.setTitle("");
         primaryStage.setScene(mainScene);
         primaryStage.show();
+      
+        //SET FULL SCREEN TO REMOVE THE TOP BLACK BAR
+        //THIS MUST BE CALLED AFTER CREATING THE SCENE!!
+        if(maximized){
+          primaryStage.setFullScreen(true); 
+        }
+  
+        
+        //keyboard.show(getGUI().getRootPane());
+
     }
     
 
     
-    public MyApp2 getApp(){
+    public void reLoadGUI(){
+        createScreens(ModelingScreen.ID);
+        getSidePanel().closePanel();
+    }
+
+    public AnchorPane getRootPane(){
+        return root;
+    }
+    
+    public SidePane getSidePanel(){
+        return sidePane;
+    }
+
+    public void setScreenWidthAndHeight(ReadOnlyDoubleProperty w,ReadOnlyDoubleProperty h){
+        width=w;
+        height=h;
+    }
+    
+    public ReadOnlyDoubleProperty getWidth(){
+        return width;
+    }
+    public ReadOnlyDoubleProperty getHeight(){
+        return height;
+    }
+    
+    public static final String NOTIFICATION_WARNING="warning";
+    public static final String NOTIFICATION_THEMED="theme";
+    public static final String NOTIFICATION_WHITE="white";
+    public static final String NOTIFICATION_ERROR="error";
+    public static final String NOTIFICATION_SUCCESS="success";
+    public static final String NOTIFICATION_YELLOWALERT="alertYellow";
+    
+    public void showNotification(String message, String textAreaCssFile, double w, double h){
+        String colorBG;
+        Color labelColor;
+        
+        switch(textAreaCssFile){
+        case NOTIFICATION_THEMED:
+            labelColor = GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT);
+            colorBG = GUImanager.colorTheme.getColor(ColorTheme.COLOR_MAIN);
+            break;
+        case NOTIFICATION_ERROR:
+            labelColor = GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT);
+            colorBG = "indianred";
+            break;
+        case NOTIFICATION_SUCCESS:
+            labelColor = GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT);
+            colorBG = "limegreen";
+            break;
+        case NOTIFICATION_WARNING:
+            labelColor =  GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT);
+            colorBG = "orange";
+            break;
+        case NOTIFICATION_YELLOWALERT:
+            labelColor =  GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT);
+            colorBG = "yellow";
+            break;
+        default:
+            labelColor = Color.BLACK;
+            colorBG = "white";
+        } 
+        
+        StackPane pane = new StackPane();
+        pane.setStyle("-fx-background-color: "+colorBG+";");
+
+        Text txt = utilsGUI.create(message, "Roboto", 12, labelColor);
+      
+        pane.setPrefSize(w, h);
+        pane.getChildren().add(txt);
+        
+        JFXSnackbar bar = new JFXSnackbar(getCurrentScreen().getCentralPane());
+        bar.enqueue(new JFXSnackbar.SnackbarEvent(pane));
+    }
+    
+
+
+    
+    public BasicApp getApp(){
         return app;
     }
 
@@ -281,7 +248,7 @@ public class GUImanager {
         return getScreen(currentScreen);
     }
 
-    public void createScreens(){
+    private void createScreens(String id){
         
         screens = new HashMap<>();
         screens.clear();
@@ -290,19 +257,33 @@ public class GUImanager {
         screens.put(appModelingScreen.getID(), appModelingScreen);
         mainScreen = appModelingScreen.getID();
 
+        
+        AppScreen splashScreen = new SplashScreen(this);
+        screens.put(splashScreen.getID(), splashScreen);
+        
         AppScreen appAnalysisScreen = new AnalysisScreen(this);
         screens.put(appAnalysisScreen.getID(), appAnalysisScreen);
-              
+         
+        AppScreen documentationScreeen = new DocumentationScreen(this);
+        screens.put(documentationScreeen.getID(), documentationScreeen);
+        
+        AppScreen aboutScreen = new AboutScreen(this);
+        screens.put(aboutScreen.getID(), aboutScreen);
+        
         AppScreen materialEditScreen = new ObjListEditScreen(app.getBlocks().getProperty(BlockProject.PROPNAME_MATERIAL_LIST).castoToPropertyObjectList(),this);
         screens.put(materialEditScreen.getID(), materialEditScreen);
         
         AppScreen loadCaseEditScreen = new ObjListEditScreen(app.getBlocks().getProperty(BlockProject.PROPNAME_LOADCASE_LIST).castoToPropertyObjectList(),this);
         screens.put(loadCaseEditScreen.getID(), loadCaseEditScreen);
         
-        AppScreen BLockProjectEditScreen = new SingleObjectEditScreen(SCREEN_SETTINGS,app.getBlocks(),this);
-        screens.put(BLockProjectEditScreen.getID(), BLockProjectEditScreen);
+        //AppScreen BLockProjectEditScreen = new SingleObjectEditScreen(SCREEN_SETTINGS,app.getBlocks(),this);
+        //screens.put(BLockProjectEditScreen.getID(), BLockProjectEditScreen);
         
-        loadScreen(mainScreen);
+        
+        AppScreen SettingsScreen = new VariousObjectEditScreen(app.getBlocks().getProjectSettings(),SCREEN_SETTINGS,this);
+        screens.put(SettingsScreen.getID(), SettingsScreen);
+        
+        loadScreen(id);
         
     }
        
@@ -341,24 +322,6 @@ public class GUImanager {
         }
     }
     
-    /*
-    public void showSidePane(){
-        if(root.getChildren().contains(sidePane)){
-            root.getChildren().remove(sidePane);
-        }else{
-            root.getChildren().add(sidePane);
-            AnchorPane.setBottomAnchor(sidePane, 0.0);
-            AnchorPane.setTopAnchor(sidePane, 0.0);
-        }     
-        ignoreTouch = true;
-    }*/
-
-    /*
-    public void hideSidePane(){
-        root.getChildren().remove(sidePane);
-        ignoreTouch = false;
-    }
-        */    
 
 
     

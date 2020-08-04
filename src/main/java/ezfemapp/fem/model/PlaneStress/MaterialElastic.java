@@ -8,13 +8,22 @@ import org.ejml.simple.SimpleMatrix;
  */
 public class MaterialElastic {
     
-
+    String matID;
     double E;
     double v;
+    double density;
+    
+    public MaterialElastic( String id,double elasticModulus, double poissonRatio, double density){
+        this.E=elasticModulus;
+        this.v=poissonRatio;
+        this.matID = id;
+        this.density = density;
+    }
     
     public MaterialElastic(double elasticModulus, double poissonRatio){
-        E=elasticModulus;
-        v=poissonRatio;
+        this.E=elasticModulus;
+        this.v=poissonRatio;
+        this.matID = "";
     }
     
     public SimpleMatrix getElasticityMatrix(){

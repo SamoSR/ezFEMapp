@@ -60,7 +60,7 @@ public class Block extends SerializableObject{
     
     
     public void generateGeometry(){
-        geometry = BlockRenderer.createBlockGeometry_Polygon3D(this,ModelRenderer.gridRenderSize);
+        geometry = BlockRenderer.createBlockGeometry_Polygon3D(this,(float)ModelRenderer.gridRenderSize);
     }
     
     public Node getGometry(){

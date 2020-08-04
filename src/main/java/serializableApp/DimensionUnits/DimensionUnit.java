@@ -18,7 +18,7 @@ import serializableApp.objects.SerializableObject;
 public class DimensionUnit extends SerializableObject{
     
     public static final String OBJECT_TYPE="DimensionUnit";
-    public static final String PROPNAME_UNITSTRING="";
+    public static final String PROPNAME_UNITSTRING="unit";
     
     public DimensionUnit(String name, String unit){
        super(OBJECT_TYPE,name);

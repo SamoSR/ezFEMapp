@@ -62,7 +62,7 @@ public class LinearSolverFEM {
         //ASSEMBLY GLOBAL STIFFNESS MATRIX 
         for(ele2D4N_2DOF elem:model.finiteElements){
 
-           SimpleMatrix kelem = elem.getK().scale(model.modelThicknessFactor);
+           SimpleMatrix kelem = elem.getK();
            //kelem = kelem.scale(model.modelThicknessFactor);
            
            int[] indexs = elem.getNodalIndices(nActiveDoF);
@@ -249,7 +249,7 @@ public class LinearSolverFEM {
             }
             count1++;
         }
-        F.print();
+        //F.print();
          
         count1=0;
         for(LoadCase lcase:model.loadCases){

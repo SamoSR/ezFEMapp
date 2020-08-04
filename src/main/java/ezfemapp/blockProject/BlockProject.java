@@ -5,20 +5,20 @@
  */
 package ezfemapp.blockProject;
 
-import static ezfemapp.blockProject.LoadCaseBlock.PROPNAME_COLOR;
-import static ezfemapp.blockProject.LoadCaseBlock.PROPNAME_MAG_LINE;
-import static ezfemapp.blockProject.LoadCaseBlock.PROPNAME_MAG_POINT;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javafx.scene.paint.Color;
 import serializableApp.DimensionUnits.DimensionUnit;
+import serializableApp.DimensionUnits.Unit;
 import serializableApp.DimensionUnits.UnitsManagerPro;
+import serializableApp.commands.CommandManager;
 import serializableApp.objects.EditPropertyGroup;
 import serializableApp.objects.Project;
 import serializableApp.objects.PropertyDimension;
 import serializableApp.objects.PropertyInteger;
+import serializableApp.objects.PropertyObject;
 import serializableApp.objects.PropertyObjectList;
 import serializableApp.objects.SerializableObject;
 
@@ -40,11 +40,14 @@ public class BlockProject extends Project {
     HashMap<String,ArrayList<BlockDistLoad>> loads;
     Block[][] blockMatrix;
     
-
+    List<ModelingAction> executedActions = new ArrayList<>();
+    List<ModelingAction> undoActions = new ArrayList<>();
+    CommandManager cmdMng;
+    
     public BlockProject(String id){
         super(id);
         DimensionUnit dimGlobal =  UnitsManagerPro.getDefault(UnitsManagerPro.UNITS_ELEMENT_DIMENSIONS);           
-        addProperty(new PropertyDimension(PROPNAME_ANALYTICAL_THICKNESS,10,dimGlobal.getRealUnits(),dimGlobal.getID()));  
+        addProperty(new PropertyDimension(PROPNAME_ANALYTICAL_THICKNESS,1,dimGlobal.getRealUnits(),dimGlobal.getID()));  
         addProperty(new PropertyDimension(PROPNAME_GRID_SIZE,10,dimGlobal.getRealUnits(),dimGlobal.getID()));
         addProperty(new PropertyObjectList(PROPNAME_MATERIAL_LIST, BlockMaterial.OBJECT_TYPE));
         addProperty(new PropertyObjectList(PROPNAME_BLOCK_LIST, Block.OBJECT_TYPE));
@@ -59,11 +62,19 @@ public class BlockProject extends Project {
         blockMatrix = new Block[getNumRows()][getNumCols()];
         loads = new HashMap<>();
         
+        getProperty(PROPNAME_MATERIAL_LIST).castoToPropertyObjectList().setMaxItems(10);
+        getProperty(PROPNAME_LOADCASE_LIST).castoToPropertyObjectList().setMaxItems(10);
         
         getProperty(PROPNAME_NUMBER_ROWS).uneditable();
         getProperty(PROPNAME_NUMBER_COLS).uneditable();
         addPropertyGroup(new EditPropertyGroup("Grid System", PROPNAME_GRID_SIZE,PROPNAME_NUMBER_ROWS,PROPNAME_NUMBER_COLS ));
         addPropertyGroup(new EditPropertyGroup("Analysis", PROPNAME_ANALYTICAL_THICKNESS));
+        
+        cmdMng = new CommandManager(this);
+    }
+    
+    public CommandManager getCmdManager(){
+        return cmdMng;
     }
     
     public double getAnalyticalThickness(){
@@ -78,6 +89,15 @@ public class BlockProject extends Project {
             materials.add((BlockMaterial)obj);
         }
         return materials;
+    }
+    
+    public List<LoadCaseBlock> getLoadCases(){
+       List<LoadCaseBlock> loadCases = new ArrayList<>();
+        PropertyObjectList lcaseList = getProperty(PROPNAME_LOADCASE_LIST).castoToPropertyObjectList();
+        for(SerializableObject obj:lcaseList.getObjectList()){
+            loadCases.add((LoadCaseBlock)obj);
+        }
+        return loadCases; 
     }
     
     public void generateBlockMatrix(){
@@ -103,21 +123,96 @@ public class BlockProject extends Project {
                 list.addObjectAnyID(blockMatrix[i][j]);
             }
         }
+    } 
+    
+    public ModelingAction getLastAction(){
+        if(executedActions.isEmpty()){
+            System.out.println("null executed action");
+            return null;
+        }
+        return executedActions.get(executedActions.size()-1);
+    }
+    public ModelingAction getLastUndoAction(){
+        if(undoActions.isEmpty()){
+            System.out.println("null undo action");
+            return null;
+        }
+        return undoActions.get(undoActions.size()-1);
     }
     
-    List<Block> lastAdded = new ArrayList<>();
-    List<Block> lastRremoved = new ArrayList<>();;
-    public List<Block> getLastAdded(){
-        return lastAdded;
+    public void undoLastAction(){
+        ModelingAction undoAction = new ModelingAction();
+        ModelingAction action = getLastAction();
+        if(action==null){
+            System.out.println("undo error: null action");
+            return;
+        }
+        for(Block b:action.addedBlocks){
+            blockMatrix[b.getRow()][b.getColumn()] = null;  
+            //System.out.println("removed: "+b.getID());
+            undoAction.removedBlocks.add(b);
+        }
+        for(Block b:action.removedBlocks){
+            blockMatrix[b.getRow()][b.getColumn()] = b;
+            undoAction.addedBlocks.add(b);
+        }
+        for(BlockDistLoad load:action.removedLoads){
+            addLoad(load);
+            undoAction.addedLoads.add(load);
+        }
+        for(BlockDistLoad load:action.addedLoads){
+            removeLoad(load);
+            undoAction.removedLoads.add(load);
+        }
+        undoActions.add(undoAction);
+        executedActions.remove(action);
+        updateBlockList();
     }
-    public List<Block> getLastRemoved(){
-        return lastRremoved;
+    
+
+    
+    public void redoLastUndoAction(){
+        ModelingAction newAction = new ModelingAction();
+        ModelingAction action = getLastUndoAction();
+        if(action==null){
+            System.out.println("undo error: null action");
+            return;
+        }
+        for(Block b:action.addedBlocks){
+            blockMatrix[b.getRow()][b.getColumn()] = null;  
+            newAction.removedBlocks.add(b);
+        }
+        for(Block b:action.removedBlocks){
+            blockMatrix[b.getRow()][b.getColumn()] = b;
+            newAction.addedBlocks.add(b);
+        }
+        for(BlockDistLoad load:action.removedLoads){
+            addLoad(load);
+            newAction.addedLoads.add(load);
+        }
+        for(BlockDistLoad load:action.addedLoads){
+            removeLoad(load);
+            newAction.removedLoads.add(load);
+        }
+        undoActions.remove(action);
+        executedActions.add(newAction);
+        updateBlockList();
+    }
+    
+    private void addLoad(BlockDistLoad load){
+        PropertyObjectList list = getProperty(PROPNAME_LINEARLOAD_LIST).castoToPropertyObjectList();
+        loads.get(load.getLoadCase().getID()).add(load);
+        list.addObjectUniqueID(load);    
+    }
+    private void removeLoad(BlockDistLoad load){
+        PropertyObjectList list = getProperty(PROPNAME_LINEARLOAD_LIST).castoToPropertyObjectList();
+        loads.get(load.getLoadCase().getID()).remove(load);
+        list.removeObject(load);    
     }
     
     public void setBlockAt(int r, int c, int sizeR,int sizeC,String material){
-        lastAdded.clear();
-        lastRremoved.clear();
-        
+        ModelingAction action = new ModelingAction();
+
         SerializableObject mat = getProperty(PROPNAME_MATERIAL_LIST).castoToPropertyObjectList().getObjectByID(material);
         int nRows = getNumRows();
         int nCols = getNumCols();
@@ -137,7 +232,8 @@ public class BlockProject extends Project {
                     continue;
                 }
                 if(blockMatrix[r+i][c+j]!=null){
-                    lastRremoved.add(blockMatrix[r+i][c+j]);
+                   // lastRremoved.add(blockMatrix[r+i][c+j]);
+                    action.removedBlocks.add(blockMatrix[r+i][c+j]);
                 }
                 Block newBlock = null;
                 if(mat!=null){
@@ -150,18 +246,21 @@ public class BlockProject extends Project {
                     newBlock.intializeReferencedObjects(this);
                     newBlock.referenceParentToProperties();
                     newBlock.generateGeometry();
-                    lastAdded.add(newBlock);
+                   // lastAdded.add(newBlock);
+                    action.addedBlocks.add(newBlock);
                 }
                 
             }
         }
         
+        executedActions.add(action);
         updateBlockList();
     }
     
+    
+    
     public void setSupportAt(int r, int c, int sizeR,int sizeC, String type){
-        lastAdded.clear();
-        lastRremoved.clear();
+        ModelingAction action = new ModelingAction();
         
         SerializableObject mat = getProperty(PROPNAME_MATERIAL_LIST).castoToPropertyObjectList().getObjectList().get(0); 
         int nRows = getNumRows();
@@ -183,7 +282,8 @@ public class BlockProject extends Project {
                     continue;
                 }
                 if(blockMatrix[r+i][c+j]!=null){
-                    lastRremoved.add(blockMatrix[r+i][c+j]);
+                   // lastRremoved.add(blockMatrix[r+i][c+j]);
+                    action.removedBlocks.add(blockMatrix[r+i][c+j]);
                 }
                 Block newBlock = null;
                 if(mat!=null){
@@ -195,18 +295,18 @@ public class BlockProject extends Project {
                     newBlock.intializeReferencedObjects(this);
                     newBlock.referenceParentToProperties();
                     newBlock.generateGeometry();
-                    lastAdded.add(newBlock);
+                  //  lastAdded.add(newBlock);
+                    action.addedBlocks.add(newBlock);
                 }
             }
         }
         
-        //blockMatrix[r][c] = newBlock;
+        executedActions.add(action);
         updateBlockList();
-        referenceParentToProperties();
-        initializeReferenceProperties();   
     }
     
     public void setLoadAt(int r, int c, int sizeR,int sizeC,String loadCase,String direction){
+        ModelingAction action = new ModelingAction();
         
         SerializableObject lcase = getProperty(PROPNAME_LOADCASE_LIST).castoToPropertyObjectList().getObjectByID(loadCase);
         int nRows = getNumRows();
@@ -218,7 +318,8 @@ public class BlockProject extends Project {
             return;
         }
         if(lcase==null){
-            removeAllLoadsAt(r, c, sizeR, sizeC);
+            removeAllLoadsAt(r, c, sizeR, sizeC,action);
+            executedActions.add(action);
             return;
         }
         
@@ -232,44 +333,44 @@ public class BlockProject extends Project {
         
         for(int i=0;i<sizeR;i++){
             for(int j=0;j<sizeC;j++){
-                BlockDistLoad load = new BlockDistLoad(r+i, c+j, (LoadCaseBlock)lcase, direction);  
+                BlockDistLoad load = new BlockDistLoad(r+i, c+j, lcase.getID(), direction);  
                 list.removeObjectByID(load.getID());
                 list.addObjectAnyID(load);
                 loads.get(lcase.getID()).add(load);
+                action.addedLoads.add(load);
             }
         }
         
-     
+        executedActions.add(action);
         //updateBlockList();
         //updateReferenceProperties();
         referenceParentToProperties();
         initializeReferenceProperties(); 
-
     }
     
     
     public void clearAll(){
-        lastAdded.clear();
-        lastRremoved.clear();
+        ModelingAction action = new ModelingAction();
         int r = getNumRows();
         int c = getNumCols();
         for(int i=0;i<r;i++){
             for(int j=0;j<c;j++){
                 if(blockMatrix[i][j]!=null){
-                    lastRremoved.add(blockMatrix[i][j]);
+                    //lastRremoved.add(blockMatrix[i][j]);
+                    action.removedBlocks.add(blockMatrix[i][j]);
                     blockMatrix[i][j]=null;
                 }
                 
             }
         }
+        executedActions.add(action);
         updateBlockList();
-        referenceParentToProperties();
-        initializeReferenceProperties();
+       // referenceParentToProperties();
+       // initializeReferenceProperties();
     }
     
     public void clearMaterial(String mat){
-        lastAdded.clear();
-        lastRremoved.clear();
+        ModelingAction action = new ModelingAction();
         int r = getNumRows();
         int c = getNumCols();
         for(int i=0;i<r;i++){
@@ -279,20 +380,18 @@ public class BlockProject extends Project {
                         continue;
                     }
                     if(blockMatrix[i][j].getMaterial().getID().equals(mat)){
-                        lastRremoved.add(blockMatrix[i][j]);
+                        action.removedBlocks.add(blockMatrix[i][j]);
                         blockMatrix[i][j]=null;
                         
                     }
                 }                  
             }
         }
+        executedActions.add(action);
         updateBlockList();
-        referenceParentToProperties();
-        initializeReferenceProperties();
     }
     public void clearSupport(String type){
-        lastAdded.clear();
-        lastRremoved.clear();
+        ModelingAction action = new ModelingAction();
         int r = getNumRows();
         int c = getNumCols();
         for(int i=0;i<r;i++){
@@ -301,7 +400,7 @@ public class BlockProject extends Project {
                     if(blockMatrix[i][j] instanceof SupportBlock){
                         SupportBlock sup = (SupportBlock)blockMatrix[i][j];
                         if(sup.getSupportType().equals(type)){
-                            lastRremoved.add(blockMatrix[i][j]);
+                            action.removedBlocks.add(blockMatrix[i][j]);
                             blockMatrix[i][j]=null;
                         }
                     }
@@ -309,18 +408,14 @@ public class BlockProject extends Project {
                 }                  
             }
         }
+        executedActions.add(action);
         updateBlockList();
-        referenceParentToProperties();
-        initializeReferenceProperties();
     }
       
     
-    public void removeAllLoadsAt(int r, int c, int sizeR,int sizeC){
+    private void removeAllLoadsAt(int r, int c, int sizeR,int sizeC, ModelingAction action){
            
-        //SerializableObject lcase = getProperty(PROPNAME_LOADCASE_LIST).castoToPropertyObjectList().getObjectByID(loadCase);
-        //if(lcase==null){
-           // return;
-        //}
+        //System.out.println("Removing loads");
         
         int nRows = getNumRows();
         int nCols = getNumCols();
@@ -349,6 +444,7 @@ public class BlockProject extends Project {
                         int loadCol = Integer.parseInt(colStr);
                         if(loadRow==(r+i)&&loadCol==(c+j)){
                             itr.remove();
+                            action.removedLoads.add(load);
                             getProperty(PROPNAME_LINEARLOAD_LIST).castoToPropertyObjectList().removeObjectByID(load.getID());
                         }
                     } 
@@ -361,8 +457,15 @@ public class BlockProject extends Project {
     }
     
     public void removeLoadsAll(){
+        ModelingAction action = new ModelingAction();
+        for(ArrayList<BlockDistLoad> cList:loads.values()){
+            for(BlockDistLoad load:cList){
+                action.removedLoads.add(load);
+            }
+        }
         loads.clear();
         getProperty(PROPNAME_LINEARLOAD_LIST).castoToPropertyObjectList().clearList();
+        executedActions.add(action);
     }
     
     public void removeLoadsLoadCase(String loadCase){
@@ -399,16 +502,16 @@ public class BlockProject extends Project {
     public void createDefaultProject(){
         
         BlockMaterial mat1 = new BlockMaterial("mat1")
-                .setElasticModulus(14000*Math.sqrt(300), "kg/cm^2")
-                .setDensity(2.4, "ton/m^3")
-                .setPoissonRatio(0.24)
-                .setColor(Color.GRAY); 
-        
+                .setElasticModulus(210e4, "kg/cm^2")
+                .setDensity(2, "ton/m^3")
+                .setPoissonRatio(0.3)
+                .setColor(Color.GRAY,0.9); 
+   
         BlockMaterial mat2 = new BlockMaterial("mat2")
-                .setElasticModulus(14000*Math.sqrt(300)*0.10, "kg/cm^2")
+                .setElasticModulus(210e4*0.10, "kg/cm^2")
                 .setDensity(1.5, "ton/m^3")
-                .setPoissonRatio(0.24)
-                .setColor(Color.BROWN); 
+                .setPoissonRatio(0.3)
+                .setColor(139,69,19,0.9); 
         
         
 
@@ -442,13 +545,13 @@ public class BlockProject extends Project {
         lcase1.undeletable();*/
         
         LoadCaseBlock lcase2 = new LoadCaseBlock("LoadCase1")
-                .setLinearForceMagnitude(1500, "kg/m")
-                .setPointForceMagnitude(10, "kg")
+                .setLinearForceMagnitude(10, "kg/cm^2")
+                .setPointForceMagnitude(1000, "kN")
                 .setColor(Color.GREEN);
         
         LoadCaseBlock lcase3 = new LoadCaseBlock("LoadCase2")
-                .setLinearForceMagnitude(1500, "kg/m")
-                .setPointForceMagnitude(10, "kg")
+                .setLinearForceMagnitude(10, "kg/cm^2")
+                .setPointForceMagnitude(1000, "kN")
                 .setColor(Color.BLUE);
         
         /*
@@ -476,6 +579,7 @@ public class BlockProject extends Project {
         }
         switch(type){
             case UnitsManagerPro.OBJECT_TYPE:
+                 case "Units":
                 return new UnitsManagerPro();
             case ColorObject.OBJECT_TYPE:
                 return new ColorObject(id, 0, 0, 0);
@@ -487,7 +591,7 @@ public class BlockProject extends Project {
                 }else{
                     return new Block(-1,-1,null);
                 }
-                
+   
             case LoadCaseBlock.OBJECT_TYPE:
                 return new LoadCaseBlock("");
             case ChunkSize.OBJECT_TYPE:
@@ -496,10 +600,83 @@ public class BlockProject extends Project {
            // case SupportBlock.PROPVALUE_SUBTYPE:
                // return new SupportBlock(0, 0, null, "");
             case BlockDistLoad.OBJECT_TYPE:  
-                return new BlockDistLoad(0, 0, null, "");
+                return new BlockDistLoad(0, 0, "", "");
             case Project.OBJECT_TYPE:
                 return new BlockProject("");
         }
+        System.out.println("returning null default object for type: "+type);
         return null;
     }
+    
+    public static final String[] stressUnits = new String[]{"Pa","kPa","MPa","GPa","N/mm^2","N/cm^2","kgf/m^2","kgf/cm^2","ksi","psi"};
+    public static final String[] lengthUnits = new String[]{"m","cm","mm","in","ft"};
+    public static final String[] forceUnits = new String[]{"N","kN","MN","GN","kgf","tonf"};
+    public static final String[] densityUnits = new String[]{"g/cm^3","kg/m^3","ton/m^3","lb/ft^3","slug/ft^3",};
+    
+    public List<SerializableObject> getProjectSettings(){
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_FEM_STRESS).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(stressUnits);
+
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_ELEMENT_DIMENSIONS).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(lengthUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_DISPLACEMENTS).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(lengthUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_ELASTIC_MODULUS).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(stressUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_LOAD_PRESSURE).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(stressUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_LOAD_POINT_FORCE).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(forceUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_DENSITY).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(densityUnits);
+        
+        getUnitsManager().getUnits(UnitsManagerPro.UNITS_REACTION_FORCE).getProperty(DimensionUnit.PROPNAME_UNITSTRING).castoToPropertyString()
+        .setAllowableValues(forceUnits);
+        
+        List<SerializableObject> settings=new ArrayList<>();
+        
+        SerializableObject analysisSettings = new SerializableObject("Settings", "Analysis");
+        analysisSettings.addProperty(getProperty(PROPNAME_ANALYTICAL_THICKNESS));
+        analysisSettings.addPropertyGroup(new EditPropertyGroup("Analysis", PROPNAME_ANALYTICAL_THICKNESS ));
+        
+        SerializableObject gridSettings = new SerializableObject("Settings", "Grid");
+        gridSettings.addProperty(getProperty(PROPNAME_GRID_SIZE));
+        gridSettings.addProperty(getProperty(PROPNAME_NUMBER_ROWS));
+        gridSettings.addProperty(getProperty(PROPNAME_NUMBER_COLS));
+        gridSettings.addPropertyGroup(new EditPropertyGroup("Grid Size", PROPNAME_GRID_SIZE,PROPNAME_NUMBER_ROWS,PROPNAME_NUMBER_COLS ));
+        
+        
+        
+        SerializableObject unitSettings = new SerializableObject("Settings", "Units");
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_FEM_STRESS, getUnitsManager().getUnits(UnitsManagerPro.UNITS_FEM_STRESS)));
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_ELEMENT_DIMENSIONS, getUnitsManager().getUnits(UnitsManagerPro.UNITS_ELEMENT_DIMENSIONS)));
+        
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_LOAD_POINT_FORCE, getUnitsManager().getUnits(UnitsManagerPro.UNITS_LOAD_POINT_FORCE)));
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_LOAD_PRESSURE, getUnitsManager().getUnits(UnitsManagerPro.UNITS_LOAD_PRESSURE)));
+        
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_ELASTIC_MODULUS, getUnitsManager().getUnits(UnitsManagerPro.UNITS_ELASTIC_MODULUS)));
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_DENSITY, getUnitsManager().getUnits(UnitsManagerPro.UNITS_DENSITY)));
+        
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_DISPLACEMENTS, getUnitsManager().getUnits(UnitsManagerPro.UNITS_DISPLACEMENTS)));
+        unitSettings.addProperty(new PropertyObject(UnitsManagerPro.UNITS_REACTION_FORCE, getUnitsManager().getUnits(UnitsManagerPro.UNITS_REACTION_FORCE)));
+        
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Length", UnitsManagerPro.UNITS_ELEMENT_DIMENSIONS));
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Load", UnitsManagerPro.UNITS_LOAD_PRESSURE,UnitsManagerPro.UNITS_LOAD_POINT_FORCE));
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Material", UnitsManagerPro.UNITS_ELASTIC_MODULUS,UnitsManagerPro.UNITS_DENSITY));
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Displacement", UnitsManagerPro.UNITS_DISPLACEMENTS));
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Stress", UnitsManagerPro.UNITS_FEM_STRESS));
+        unitSettings.addPropertyGroup(new EditPropertyGroup("Reactions", UnitsManagerPro.UNITS_REACTION_FORCE));
+        
+        settings.add(analysisSettings);
+        settings.add(gridSettings);
+        settings.add(unitSettings);
+        return settings;
+    }
+    
 }

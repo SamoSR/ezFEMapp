@@ -54,8 +54,11 @@ public class PropertyDimension extends Property{
     
     public PropertyDimension(String name, double val, DimensionUnit units){
         super(name,Property.TYPE_DIMENSION);   
+       // System.out.println("in value: "+val);
         this.value = UnitUtils.convertToKgM(val,units.getRealUnits());
+       // System.out.println("converted value: "+value);
         this.outputUnitCode = units.getID();
+        //System.out.println("units: "+outputUnitCode);
     }
     
     public PropertyDimension(String name, double val, String inputUnits, String unitCode){

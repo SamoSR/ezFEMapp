@@ -8,7 +8,6 @@ package ezfemapp.rendering.canvas;
 import ezfemapp.blockProject.Block;
 import ezfemapp.blockProject.BlockDistLoad;
 import ezfemapp.blockProject.SupportBlock;
-import ezfemapp.gui.ezfem.ModelingScreen;
 import ezfemapp.rendering.shapes.PolygonMesh4Node;
 import ezfemapp.rendering.shapes.ShapeDrawer;
 import javafx.geometry.Point2D;
@@ -21,6 +20,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import org.fxyz3d.geometry.Point3D;
 import serializableApp.utils.NumericUtils;
 
 /**
@@ -49,11 +49,10 @@ public class BlockRenderer {
                                            p2.getX(),p2.getY(),
                                            p3.getX(),p3.getY(),
                                            p4.getX(),p4.getY());
-        //polygonGeometry.setId("b,"+row+","+col);
-        
+        polygonGeometry.setId(b.getID());
         polygonGeometry.setStroke(Color.TRANSPARENT);
         polygonGeometry.setFill(Color.TRANSPARENT);
-        //blockGeometry.getChildren().add(polygonGeometry);
+        blockGeometry.getChildren().add(polygonGeometry);
         
         double r = gridRenderSize/10;
         double positions[]= new double[]{-gridRenderSize/2+r*1.5,0,gridRenderSize/2-r*1.5};
@@ -76,6 +75,7 @@ public class BlockRenderer {
             re.setHeight(gridRenderSize-sizeReduction);
             re.setTranslateX(p1.getX()+sizeReduction/2);
             re.setTranslateY(p1.getY()+sizeReduction/2);
+            re.setId(b.getID());
             blockGeometry.getChildren().add(re);
         }else if(b.getSupportType().equals(SupportBlock.SUPPORT_PINNED_HORZ)){
 
@@ -91,6 +91,7 @@ public class BlockRenderer {
                 c.setCenterY(midPoint.getY()+positions[i]);
                 c.setRadius(r);
                 c.setFill(Color.BLACK);
+                c.setId(b.getID());
                 blockGeometry.getChildren().add(c);
             }
             
@@ -124,6 +125,7 @@ public class BlockRenderer {
                 c.setCenterY(midPoint.getY()+gridRenderSize/2-r-4);
                 c.setRadius(r);
                 c.setFill(Color.BLACK);
+                c.setId(b.getID());
                 blockGeometry.getChildren().add(c);
             } 
             
@@ -145,11 +147,11 @@ public class BlockRenderer {
             blockGeometry.getChildren().add(l1);     
         }
 
-        blockGeometry.setId("bs,"+row+","+col+","+b.getSupportType());
+        blockGeometry.setId(b.getID());
         return blockGeometry;
     }
     
-        //P1- TOP-LEFT
+    //P1- TOP-LEFT
     //P2- BOT-LEFT
     //P3- BOT-RIGHT
     //P4- TOP_RIGHT
@@ -187,23 +189,54 @@ public class BlockRenderer {
     //P2- BOT-LEFT
     //P3- BOT-RIGHT
     //P4- TOP_RIGHT
-    public static Node createBlockGeometry_Polygon3D(Block b, double gridRenderSize ){
-
-
+    public static Node blockContour(Block b, double gridRenderSize,Color color, double width ){
+        int row = b.getRow();
+        int col = b.getColumn();
+        Group blockGeometry = new Group();
+        Point2D p1 = new Point2D(col*gridRenderSize,row*gridRenderSize);
+        Point2D p2 = new Point2D(col*gridRenderSize,row*gridRenderSize+gridRenderSize);
+        Point2D p3 = new Point2D(col*gridRenderSize+gridRenderSize,row*gridRenderSize+gridRenderSize);
+        Point2D p4 = new Point2D(col*gridRenderSize+gridRenderSize,row*gridRenderSize);
+        Polygon polygonGeometry = new Polygon();
+        polygonGeometry.getPoints().addAll(p1.getX(),p1.getY(),
+                                           p2.getX(),p2.getY(),
+                                           p3.getX(),p3.getY(),
+                                           p4.getX(),p4.getY());
+        polygonGeometry.setId(b.getID());
+        polygonGeometry.setFill(Color.TRANSPARENT);
+        polygonGeometry.setStroke(color);
+        polygonGeometry.setStrokeWidth(width);
+        blockGeometry.getChildren().add(polygonGeometry);
+        return blockGeometry;
+    }
+    
+    //P1- TOP-LEFT
+    //P2- BOT-LEFT
+    //P3- BOT-RIGHT
+    //P4- TOP_RIGHT
+    public static Node createBlockGeometry_Polygon3D(Block b, float gridRenderSize ){
         Group blockGeometry = new Group();
         
         PolygonMesh4Node poly = new PolygonMesh4Node();
-        double c = b.getColumn();
-        double r = b.getRow();
-        poly.setPoint(0,c*gridRenderSize,r*gridRenderSize,0,1);
-        poly.setPoint(1,c*gridRenderSize,r*gridRenderSize+gridRenderSize,0,1);
-        poly.setPoint(2,c*gridRenderSize+gridRenderSize,r*gridRenderSize+gridRenderSize,0,1);
-        poly.setPoint(3,c*gridRenderSize+gridRenderSize,r*gridRenderSize,0,1);
+        int c = b.getColumn();
+        int r = b.getRow();
+        
+        Point3D p1 = new Point3D(c*gridRenderSize,r*gridRenderSize,0,1);
+        Point3D p2 = new Point3D(c*gridRenderSize,r*gridRenderSize+gridRenderSize,0,1);
+        Point3D p3 = new Point3D(c*gridRenderSize+gridRenderSize,r*gridRenderSize+gridRenderSize,0,1);
+        Point3D p4 = new Point3D(c*gridRenderSize+gridRenderSize,r*gridRenderSize,0,1);
+
+        poly.setPoint(0,p1);
+        poly.setPoint(1,p2);
+        poly.setPoint(2,p3);
+        poly.setPoint(3,p4);
         poly.updateMesh();
         
         poly.setDiffuseColor(Color.TRANSPARENT);
         poly.setBlendMode(BlendMode.SCREEN);
 
+       //System.out.println("material: "+b.getMaterial().getID());
+        
         poly.setMaterial(new PhongMaterial(b.getMaterial().getColor().getColorFX()));
         blockGeometry.getChildren().add(poly);
         
@@ -213,12 +246,13 @@ public class BlockRenderer {
             Circle node = new Circle();
             node.setCenterX(p.getX());
             node.setCenterY(p.getY());
-            node.setRadius(gridRenderSize/2/10);
+            node.setRadius(gridRenderSize/2/7);
             node.setFill(Color.BLACK);
             blockGeometry.getChildren().add(node);
         }
         
-        blockGeometry.setId("bk,"+r+","+c+","+b.getMaterial());
+        blockGeometry.getChildren().add(ShapeDrawer.drawPlane(p1, p2, p3, p4, Color.BLACK));
+        blockGeometry.setId(b.getID());
         return blockGeometry;
     }
     
@@ -263,10 +297,35 @@ public class BlockRenderer {
             Circle c = new Circle();
             c.setCenterX(p.getX());
             c.setCenterY(p.getY());
-            c.setRadius(gridRenderSize/2/10);
+            c.setRadius(gridRenderSize/2/7);
             c.setFill(Color.BLACK);
             blockGeometry.getChildren().add(c);
         } 
+        return blockGeometry;
+    }
+    
+    //P1- TOP-LEFT
+    //P2- BOT-LEFT
+    //P3- BOT-RIGHT
+    //P4- TOP_RIGHT
+    public static Node blockCountourDeformed(Block b, double gridRenderSize, double[] u, Color color, double width){
+        int row = b.getRow();
+        int col = b.getColumn();
+        Group blockGeometry = new Group();
+        Point2D p1 = new Point2D(col*gridRenderSize+u[0],row*gridRenderSize+u[1]);
+        Point2D p2 = new Point2D(col*gridRenderSize+u[2],row*gridRenderSize+gridRenderSize+u[3]);
+        Point2D p3 = new Point2D(col*gridRenderSize+gridRenderSize+u[4],row*gridRenderSize+gridRenderSize+u[5]);
+        Point2D p4 = new Point2D(col*gridRenderSize+gridRenderSize+u[6],row*gridRenderSize+u[7]);
+          Polygon polygonGeometry = new Polygon();
+        polygonGeometry.getPoints().addAll(p1.getX(),p1.getY(),
+                                           p2.getX(),p2.getY(),
+                                           p3.getX(),p3.getY(),
+                                           p4.getX(),p4.getY());
+        polygonGeometry.setId(b.getID());
+        polygonGeometry.setFill(Color.TRANSPARENT);
+        polygonGeometry.setStroke(color);
+        polygonGeometry.setStrokeWidth(width);
+        blockGeometry.getChildren().add(polygonGeometry);
         return blockGeometry;
     }
     
@@ -276,34 +335,78 @@ public class BlockRenderer {
         Group blockGeometry = new Group();
         
         PolygonMesh4Node poly = new PolygonMesh4Node();
-        double c = b.getColumn();
-        double r = b.getRow();
+        int c = b.getColumn();
+        int r = b.getRow();
+        
+        
         poly.setPoint(0,c*size+u[0],r*size+u[1],0,0);
         poly.setPoint(1,c*size+u[2],r*size+size+u[3],0,0);
         poly.setPoint(2,c*size+size+u[4],r*size+size+u[5],0,0);
         poly.setPoint(3,c*size+size+u[6],r*size+u[7],0,0);
         poly.updateMesh();
-        poly.setId("b,"+c+","+r);
+        
+        Point3D p1 = new Point3D((float)(c*size+u[0]),(float)(r*size+u[1]),0,0);
+        Point3D p2 = new Point3D((float)(c*size+u[2]),(float)(r*size+size+u[3]),0,0);
+        Point3D p3 = new Point3D((float)(c*size+size+u[4]),(float)(r*size+size+u[5]),0,0);
+        Point3D p4 = new Point3D((float)(c*size+size+u[6]),(float)(r*size+u[7]),0,0);
+
+        poly.setPoint(0,p1);
+        poly.setPoint(1,p2);
+        poly.setPoint(2,p3);
+        poly.setPoint(3,p4);
+        
+        
+        poly.setId(b.getID());
         
         poly.setDiffuseColor(Color.TRANSPARENT);
         poly.setBlendMode(BlendMode.SCREEN);
        
-       // poly.setTextureModeVertices3D(1530, p -> 1-NumericUtils.normalize(p.f,min,max),0, 1.5 ); 
+
         poly.setMaterial(new PhongMaterial(b.getMaterial().getColor().getColorFX()));
-        
         blockGeometry.getChildren().add(poly);
-        
         Point2D[] thePoints = new Point2D[]{poly.getPoint2D(0),poly.getPoint2D(1),poly.getPoint2D(2),poly.getPoint2D(3)};
         
         for(Point2D p:thePoints){
             Circle node = new Circle();
             node.setCenterX(p.getX());
             node.setCenterY(p.getY());
-            node.setRadius(size/2/10);
+            node.setRadius(size/2/7);
             node.setFill(Color.BLACK);
             blockGeometry.getChildren().add(node);
         }
+        
+        blockGeometry.getChildren().add(ShapeDrawer.drawPlane(p1, p2, p3, p4, Color.BLACK));
         return blockGeometry;
+    }
+    
+    public static Node createDeformedElementFrame(Block b, double gridRenderSize, double[] u){
+ 
+        Group blockGeometry = new Group();
+
+        int row = b.getRow();
+        int col = b.getColumn();
+
+        Point2D p1 = new Point2D(col*gridRenderSize+u[0],row*gridRenderSize+u[1]);
+        Point2D p2 = new Point2D(col*gridRenderSize+u[2],row*gridRenderSize+gridRenderSize+u[3]);
+        Point2D p3 = new Point2D(col*gridRenderSize+gridRenderSize+u[4],row*gridRenderSize+gridRenderSize+u[5]);
+        Point2D p4 = new Point2D(col*gridRenderSize+gridRenderSize+u[6],row*gridRenderSize+u[7]);
+
+        Color color = Color.BLACK;
+        double w = 3;
+
+        blockGeometry.getChildren().add(drawLine(p1,p2,color,w));
+        blockGeometry.getChildren().add(drawLine(p2,p3,color,w));
+        blockGeometry.getChildren().add(drawLine(p3,p4,color,w));
+        blockGeometry.getChildren().add(drawLine(p4,p1,color,w));
+        
+        return blockGeometry;
+    }
+    
+    public static Line drawLine(Point2D p1, Point2D p2, Color color, double w){
+        Line l = new Line(p1.getX(),p1.getY(),p2.getX(),p2.getY());
+        l.setStrokeWidth(w);
+        l.setStroke(color);
+        return l;
     }
     
     //P1- TOP-LEFT
@@ -357,7 +460,7 @@ public class BlockRenderer {
     }
     
     
-    public static Node createBlockGeometryDeformed_ColorMap(Block b, double size, double[] u, double[] colors, double min, double max){
+    public static Node createBlockGeometryDeformed_ColorMap(Block b, double size, double[] u, double[] colors, double min, double max, boolean nodes){
         double valueNode1 = colors[0];
         double valueNode2 = colors[1];
         double valueNode3 = colors[2];
@@ -366,14 +469,14 @@ public class BlockRenderer {
         Group blockGeometry = new Group();
         
         PolygonMesh4Node poly = new PolygonMesh4Node();
-        double c = b.getColumn();
-        double r = b.getRow();
+        int c = b.getColumn();
+        int r = b.getRow();
         poly.setPoint(0,c*size+u[0],r*size+u[1],0,valueNode1);
         poly.setPoint(1,c*size+u[2],r*size+size+u[3],0,valueNode2);
         poly.setPoint(2,c*size+size+u[4],r*size+size+u[5],0,valueNode3);
         poly.setPoint(3,c*size+size+u[6],r*size+u[7],0,valueNode4);
         poly.updateMesh();
-        poly.setId("b,"+c+","+r);
+        poly.setId(b.getID());
         
         poly.setDiffuseColor(Color.TRANSPARENT);
         poly.setBlendMode(BlendMode.SCREEN);
@@ -384,14 +487,17 @@ public class BlockRenderer {
         
         Point2D[] thePoints = new Point2D[]{poly.getPoint2D(0),poly.getPoint2D(1),poly.getPoint2D(2),poly.getPoint2D(3)};
         
-        for(Point2D p:thePoints){
-            Circle node = new Circle();
-            node.setCenterX(p.getX());
-            node.setCenterY(p.getY());
-            node.setRadius(size/2/10);
-            node.setFill(Color.BLACK);
-            blockGeometry.getChildren().add(node);
+        if(nodes){
+            for(Point2D p:thePoints){
+                Circle node = new Circle();
+                node.setCenterX(p.getX());
+                node.setCenterY(p.getY());
+                node.setRadius(size/2/7);
+                node.setFill(Color.BLACK);
+                blockGeometry.getChildren().add(node);
+            }
         }
+       
         return blockGeometry;
     }
     

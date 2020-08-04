@@ -14,8 +14,7 @@ import javafx.stage.Stage;
 public class App extends Application{
     @Override
     public void start(Stage primaryStage) {
-        MyApp2 app = new MyApp2();
-        app.initializeOnNewStage(primaryStage);
+        App_Desktop app = new App_Desktop(primaryStage);   
     }
 
     public static void main(String[] args) {

@@ -1,0 +1,33 @@
+root {
+  -fx-background-color: white; 
+  -fx-padding: 0;
+}
+
+.context-menu {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-text-fill: black;
+}
+
+
+.menu-item .label {
+  -fx-fill:red;
+  -fx-font-family:tahoma;
+  -fx-font-size: 0px;;
+  -fx-stroke:transparent;
+  -fx-strok-width:.0;
+}
+
+.menu-item:focused .label {
+  -fx-text-fill: transparent;
+  -fx-background-color: transparent; 
+}
+.menu-item{
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width:0;
+}
+
+.menu-item:focused {
+     -fx-background: -fx-accent;
+     -fx-background-color: transparent;    
+}

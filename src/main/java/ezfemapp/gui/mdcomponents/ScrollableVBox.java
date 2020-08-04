@@ -17,12 +17,12 @@ import javafx.scene.layout.VBox;
 public class ScrollableVBox extends VBox{
     
     public ScrollPane getScroll(){
-        String css = this.getClass().getResource("/cssStyles/ScrollPaneTransparent.css").toExternalForm(); 
+       // String css = this.getClass().getResource("/cssStyles/ScrollPaneTransparent.css").toExternalForm(); 
         ScrollPane scroll = new ScrollPane();
         scroll.setContent(this);
         scroll.setHbarPolicy(ScrollBarPolicy.NEVER);
         scroll.setVbarPolicy(ScrollBarPolicy.NEVER);
-        scroll.getStylesheets().add(css);
+      //  scroll.getStylesheets().add(css);
         return scroll;
     }
     

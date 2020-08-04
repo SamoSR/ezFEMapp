@@ -6,6 +6,9 @@
 package ezfemapp.gui.ezfem;
 
 import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.JFXPopup;
+import com.jfoenix.controls.JFXPopup.PopupHPosition;
+import com.jfoenix.controls.JFXPopup.PopupVPosition;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import ezfemapp.blockProject.ColorObject;
 import ezfemapp.gui.mdcomponents.ObjectEditPanel;
@@ -14,7 +17,6 @@ import ezfemapp.gui.screen.AppBarState;
 import ezfemapp.gui.screen.AppScreen;
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
-import java.util.List;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
@@ -22,9 +24,11 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import serializableApp.commands.CmdDeleteObject;
 import serializableApp.commands.CommandResult;
 import serializableApp.objects.Property;
@@ -49,13 +53,14 @@ public class ObjListEditScreen extends AppScreen{
     
     public ObjListEditScreen(PropertyObjectList listObj,GUImanager gui){
         super(listObj.getPropertyName(),gui); 
+        
         String appBarText = listObj.getObjectType()+" Editor";
         
         this.listObj = listObj;
         //BUTTON GO BACK
         PulseIconButtonCustom btnBack = new PulseIconButtonCustom("btnGoBack");
         btnBack.setBackGroundRectangle(42, 42, Color.TRANSPARENT, false);
-        btnBack.setIconFontawesome(FontAwesomeIcon.CHEVRON_LEFT, GUImanager.appBarIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnBack.setIconFontawesome(FontAwesomeIcon.CHEVRON_LEFT, GUImanager.topBarBurgerIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         btnBack.setEventHandler((event)->{
             gui.loadScreen(ModelingScreen.ID);
             //ModelingScreen modScreen = (ModelingScreen)gui.getCurrentScreen();
@@ -74,7 +79,7 @@ public class ObjListEditScreen extends AppScreen{
         //BTN DELETE
         PulseIconButtonCustom btnDelete = new PulseIconButtonCustom("btnLoads");
         btnDelete.setBackGroundRectangle(35, 35, Color.TRANSPARENT, false);
-        btnDelete.setIconFontawesome(FontAwesomeIcon.TRASH, "22px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnDelete.setIconFontawesome(FontAwesomeIcon.TRASH, GUImanager.appBarIconSize-5+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         btnDelete.setEventHandler((event)->{
             //getAppBar().setText(ID+" - "+"Loads");
             //setTopRightCornerTools(loadTools,loadToolsScroll);
@@ -82,22 +87,26 @@ public class ObjListEditScreen extends AppScreen{
         });
         btnDelete.construct();
         
+        /*
         //BTN COPY
         PulseIconButtonCustom btnCopy = new PulseIconButtonCustom("btnLoads");
         btnCopy.setBackGroundRectangle(35, 35, Color.TRANSPARENT, false);
-        btnCopy.setIconFontawesome(FontAwesomeIcon.COPY, "22px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnCopy.setIconFontawesome(FontAwesomeIcon.COPY, GUImanager.appBarIconSize-5+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         btnCopy.setEventHandler((event)->{
             //getAppBar().setText(ID+" - "+"Loads");
             //setTopRightCornerTools(loadTools,loadToolsScroll);
         });
         btnCopy.construct();
-        selectionState.setRightBox(btnCopy,btnDelete);
+        
+        unselectState.setRightBox(new Group());
+        */
+        selectionState.setRightBox(btnDelete);
         unselectState.setRightBox(new Group());
         
         //BUTTON ADD NEW MATERIAL
         PulseIconButtonCustom btnPlay = new PulseIconButtonCustom("btnAnalysis");
-        btnPlay.setBackGroundCircle(50, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN), true);
-        btnPlay.setIconFontawesome(FontAwesomeIcon.PLUS, "20px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnPlay.setBackGroundCircle(50, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_FILLED), true);
+        btnPlay.setIconFontawesome(FontAwesomeIcon.PLUS, "20px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_FILLED_ICON));
         btnPlay.setEventHandler((event)->{
             //gui.loadScreen(AnalysisScreen.ID);
             createNewObject();
@@ -119,11 +128,23 @@ public class ObjListEditScreen extends AppScreen{
         SerializableObject obj = getGUI().getApp().getBlocks().getDefaultObject(listObj.getObjectType());
         obj.setID(newName);
         
+        int size1 = listObj.getSize();
         boolean materialAdded = listObj.addObjectUniqueID(obj);
-        
+
         while(!materialAdded){
             obj.setID(newName+" ("+count+++")");
             materialAdded = listObj.addObjectUniqueID(obj);
+        }
+        
+        int size2 = listObj.getSize();
+        if(size2==size1){
+            JFXPopup popup = new JFXPopup();
+            StackPane pane = new StackPane();
+            Rectangle r = new Rectangle(200,30,Color.WHITE);
+            pane.getChildren().addAll(r,new Label("max number of items is "+listObj.getMaxItems()+"!"));
+            popup.setPopupContent(pane);
+            popup.show(getCentralPane(),PopupVPosition.BOTTOM,PopupHPosition.LEFT,listWidth+20,-20);
+            return;
         }
         
         if(materialAdded){
@@ -158,9 +179,15 @@ public class ObjListEditScreen extends AppScreen{
         if(obj==null){
             return;
         }
+        if(listObj.getSize()==1){
+            getGUI().showNotification("Cannot delete all objects from the list", GUImanager.NOTIFICATION_WARNING, 250, 30);
+            return;
+        }
+        
+        
         CmdDeleteObject del = new CmdDeleteObject();
         del.setParamValue(CmdDeleteObject.PARAM_NAME_PATH, obj.getObjectPath());
-        CommandResult r = del.execute(getGUI().getApp().getCmdManager());
+        CommandResult r = del.execute(getGUI().getApp().getBlocks().getCmdManager());
         if(r.getResult()){
             unselect();
             Label deleteItem = null;
@@ -185,6 +212,9 @@ public class ObjListEditScreen extends AppScreen{
     
     @Override
     public void loadScreen(){
+       String appBarText = listObj.getObjectType()+" Editor";
+       getAppBar().setText(appBarText);
+       getAppBar().construct();
        createList();
     }
     
@@ -211,9 +241,12 @@ public class ObjListEditScreen extends AppScreen{
                     lbl.setGraphic(c);
                 }
             }
+           
             list.getItems().add(lbl);
+            
         }
     
+        
         list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Label>() {
             @Override
             public void changed(ObservableValue<? extends Label> observable,Label oldValue, Label newValue) {
@@ -221,9 +254,7 @@ public class ObjListEditScreen extends AppScreen{
                     return;
                 }
                 selectedObject = newValue.getText();
-              
-                openEditObjectEditPane(listObj.getObjectByID(selectedObject));
-                //getAppBar().setText(ID+": "+selectedObject);  
+                openEditObjectEditPane(listObj.getObjectByID(selectedObject)); 
                 getAppBar().setState(STATE_SELECT);
             }
         });
@@ -271,6 +302,10 @@ public class ObjListEditScreen extends AppScreen{
     
     @Override
     public void update(String... args){
+        //getGUI().getApp().getBlocks().referenceParentToProperties();
+        //getGUI().getApp().getBlocks().initializeReferenceProperties();
+        //getGUI().getApp().getBlocks().updateReferenceProperties();
+        
         updateListLabels();
         updateListColors();
     }

@@ -36,6 +36,9 @@ public class PolygonMesh4Node extends TexturedMesh{
     public void setPoint(int index, double x, double y, double z,double f){
         vertices[index] = new Point3D((float)x,(float)y,(float)z,(float)f);
     }
+    public void setPoint(int index, Point3D p){
+        vertices[index] = p;
+    }
     
     public PolygonMesh4Node(ArrayList<Point3D> points){
         vertices = new Point3D[points.size()];
@@ -58,7 +61,6 @@ public class PolygonMesh4Node extends TexturedMesh{
     }
     
     
-    
     private TriangleMesh createGeometry(){
         
         listVertices.clear();
@@ -74,6 +76,11 @@ public class PolygonMesh4Node extends TexturedMesh{
         
         listFaces.add(new Face3(2,3,0));    
         listFaces.add(new Face3(0,1,2));
+        
+        listFaces.add(new Face3(0,0,1));
+        listFaces.add(new Face3(1,1,2));
+        listFaces.add(new Face3(2,2,3));
+        listFaces.add(new Face3(3,3,0));
         
         for(int i=0;i<listFaces.size();i++){
            listTextures.add(new Face3(0,0,0));

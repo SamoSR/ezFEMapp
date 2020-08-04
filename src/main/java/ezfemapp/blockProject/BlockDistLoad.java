@@ -26,13 +26,13 @@ public class BlockDistLoad extends SerializableObject{
     public static final String LOAD_DIRECTION_DOWN = "DOWN";
     public static final String LOAD_DIRECTION_LEFT = "LEFT";
     
-    public BlockDistLoad(int row, int col, LoadCaseBlock loadCase, String direction){
+    public BlockDistLoad(int row, int col, String loadCase, String direction){
         super(OBJECT_TYPE,OBJECT_TYPE+":"+row+","+col+","+loadCase+","+direction);
         
         addProperty(new PropertyInteger(PROPNAME_ROW, row));
         addProperty(new PropertyInteger(PROPNAME_COLUMN, col));
         addProperty(new PropertyString(PROPNAME_DIRECTION, direction));
-        addProperty(new PropertyReference(PROPNAME_LOADCASE, loadCase.getID(),LoadCaseBlock.OBJECT_TYPE, BlockProject.PROPNAME_LOADCASE_LIST));
+        addProperty(new PropertyReference(PROPNAME_LOADCASE, loadCase,LoadCaseBlock.OBJECT_TYPE, BlockProject.PROPNAME_LOADCASE_LIST));
     }
 
     

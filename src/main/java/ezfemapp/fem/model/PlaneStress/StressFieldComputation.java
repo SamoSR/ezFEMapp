@@ -26,12 +26,20 @@ public class StressFieldComputation {
     public static final String DISPLAYMODE_STRESS_VM="SVM";
     public static final String DISPLAYMODE_DISPX="DX";
     public static final String DISPLAYMODE_DISPY="DY";
+    public static final String DISPLAYMODE_RX="RX";
+    public static final String DISPLAYMODE_RY="RY";
     
     double currentMin;
     double currentMax;
     HashMap<Integer,NodeStressAverage> nodeValues = new HashMap<>();
-    
-    public StressFieldComputation(FEMmodelPlaneStress model, List<String> loadCase, String StressComponent){
+    String comp;
+ 
+    public String getMode(){
+        return comp;
+    }
+
+    public StressFieldComputation(FEMmodelPlaneStress model, List<String> loadCase,  List<String> includeMaterials,String StressComponent){
+        comp = StressComponent;
         
         LoadCaseSolutionMultiple solution = model.getLoadCaseSolutionMultiple(loadCase);
         if(solution==null){
@@ -42,17 +50,48 @@ public class StressFieldComputation {
             nodeValues.put(node.getIndex(),new NodeStressAverage(node.getIndex()));
         }
         
+        List<NodeFEM> nodesForColorScale = new ArrayList<>();
         for(ele2D4N_2DOF ele:model.getElements()){
             
-            if(ele instanceof ele2D4N_2DOF){
-                ele = (ele2D4N_2DOF)ele;
+            //exlude specific materials from the computation
+            boolean skip = true;
+            if(includeMaterials!=null){
+                for(String mat:includeMaterials){
+                    if(mat.equals(ele.mat.matID)){
+                        skip=false;
+                    }
+                }
+            }
+            /*
+            if(ele.blocksupportElement){
+                skip = true;
+            }*/
+            
+            if(skip){
+                continue;
             }
             
+            
+            
+            for(NodeFEM n:ele.nodes){
+                if(!nodesForColorScale.contains(n)){
+                    nodesForColorScale.add(n);
+                }
+            }
             
             SimpleMatrix d = new SimpleMatrix(8,1);
             d.getDDRM().setData(solution.getElementDisplacements(ele));
             
             SimpleMatrix stress = new SimpleMatrix(4,1);
+            
+            boolean average=true;
+            double[] disp = solution.getElementDisplacements(ele);
+            SimpleMatrix K = ele.getK();
+            SimpleMatrix u = new SimpleMatrix(8,1);
+            u.getDDRM().setData(disp);
+            SimpleMatrix F = K.mult(u);
+           
+            
             switch(StressComponent){
                 case DISPLAYMODE_STRESS_SXX:
                     stress = ele.nodalStresses(d, 0);
@@ -66,29 +105,55 @@ public class StressFieldComputation {
                 case DISPLAYMODE_STRESS_VM:
                     stress = ele.vonMissesStress(d);
                     break; 
+                case DISPLAYMODE_RX: 
+                    average=false;
+                    stress.set(0,0,F.get(0));
+                    stress.set(1,0,F.get(2));
+                    stress.set(2,0,F.get(4));
+                    stress.set(3,0,F.get(6));
+                    break;
+                case DISPLAYMODE_RY:   
+                    average=false;
+                    stress.set(0,0,F.get(1));
+                    stress.set(1,0,F.get(3));
+                    stress.set(2,0,F.get(5));
+                    stress.set(3,0,F.get(7));    
+                    break;
                 default:   
             }
             
+
             int i=0;
             for(NodeFEM node:ele.getNodes()){
-                nodeValues.get(node.getIndex()).addElement();
+                if(average){
+                   nodeValues.get(node.getIndex()).addElement(); 
+                }else{
+                     nodeValues.get(node.getIndex()).numElements = 1;
+                }
+
                 nodeValues.get(node.getIndex()).addValue(stress.get(i));
                 i++;
             }
+        
+            
         }
         
-        if(StressComponent==DISPLAYMODE_DISPX){
+       
+   
+        
+        
+        if(StressComponent.equals(DISPLAYMODE_DISPX)){
             nodeValues.clear();
-            for(NodeFEM node:model.getNodes()){
+            for(NodeFEM node:nodesForColorScale){
                 double[] disp = solution.getNodeDisplacements(node);
                 NodeStressAverage avg = new NodeStressAverage(node.getIndex());
                 nodeValues.put(node.getIndex(),avg);
                 avg.numElements = 1;
                 avg.value = disp[0];
             }
-        }else if(StressComponent==DISPLAYMODE_DISPY){
+        }else if(StressComponent.equals(DISPLAYMODE_DISPY)){
             nodeValues.clear();
-            for(NodeFEM node:model.getNodes()){
+            for(NodeFEM node:nodesForColorScale){
                 double[] disp = solution.getNodeDisplacements(node);
                 NodeStressAverage avg = new NodeStressAverage(node.getIndex());
                 nodeValues.put(node.getIndex(),avg);
@@ -112,13 +177,13 @@ public class StressFieldComputation {
             }
         }
         
-        
+        /*
         System.out.println("MAX STRESS: "+currentMax);
         System.out.println("MIN STRESS: "+currentMin);
         for(NodeStressAverage nv:nodeValues.values()){
             System.out.println("Node: "+nv.nodalIndex);
             System.out.println("VAL: : "+nv.getAvergage());
-        }
+        }*/
         
         
     }
@@ -152,6 +217,9 @@ public class StressFieldComputation {
     }
     
     public double getValueAtNode(int index){
+        if(nodeValues.get(index)==null){
+            return Double.NaN;
+        }
        return nodeValues.get(index).getAvergage();
     }
     public double getValueAtNode_Normalized(int index){

@@ -17,6 +17,8 @@ import serializableApp.utils.RoundDouble;
  */
 public class PropertyDouble extends Property{
     
+   private double minValue = Double.MIN_VALUE;
+   private double maxValue = Double.MAX_VALUE;
    private double value;
     
     public PropertyDouble(String name){
@@ -28,10 +30,24 @@ public class PropertyDouble extends Property{
         super(name, Property.TYPE_DOUBLE);
         this.value=value;
     }
+    public PropertyDouble(String name, double value, double min, double max){
+        super(name, Property.TYPE_DOUBLE);
+        setMax(max);
+        setMin(min);
+        this.value=value;
+    }
+    
     public PropertyDouble(String name, String shortName,double value){
         super(name, Property.TYPE_DOUBLE);
         this.value=value;
         this.setShortName(shortName);
+    }
+    
+    public void setMin(double val){
+        minValue = val;
+    }
+    public void setMax(double val){
+        maxValue = val;
     }
     
     public void setValue(double val){
@@ -62,6 +78,9 @@ public class PropertyDouble extends Property{
             double numVal = Double.parseDouble(val);
             String oldValue = RoundDouble.Round2(value);
             String newValue = RoundDouble.Round2(numVal);
+            if(numVal>maxValue||numVal<minValue){
+                return new CommandResult(false,"New value for property <"+getPropertyName()+"> is not valid"); 
+            }
             setValue(numVal);
             return new CommandResult(true,"Edited object="+getParent().getTypeAndID()+ ", property="+getPropertyName()+", old value="+oldValue+ ", new value="+newValue);
         } catch (Exception e) {

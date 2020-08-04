@@ -13,6 +13,7 @@ import java.util.List;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -29,16 +30,20 @@ public class AppTopBar extends HBox{
     Node leftBox;
     Node rightBox;
     Text textObj;
+    Color txtColor;
     private final List<AppBarState> barStates = new ArrayList<>();
     
     public AppTopBar(AppScreen screen){
         text = screen.screenID;
-        rightBox = new HBox(5);
+        txtColor =  GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON);
+        leftBox = new HBox(5);
         rightBox = new HBox(5);
         textObj  = new Text();
         parentScreen = screen;
         this.setPrefHeight(GUImanager.topBarHeight);
-        this.setStyle("-fx-background-color: "+GUImanager.colorTheme.getColor(ColorTheme.COLOR_MAIN)+";");
+        this.setStyle("-fx-background-color: "+GUImanager.colorTheme.getColor(ColorTheme.COLOR_NAVIGATION_BAR)+";");
+        
+        
     }
     
     public void addBarState(AppBarState state){
@@ -82,15 +87,23 @@ public class AppTopBar extends HBox{
     
     public void setText(String txt){
         text=txt;
-        textObj.setText(txt);
+        //textObj.setText(txt);
+    }
+    
+    public void setColorText(Color color){
+        txtColor = color;
     }
     
     public void construct(){
         this.getChildren().clear();
         textObj = new Text(text);
-        textObj.setFont(Font.font ("Arial", GUImanager.topBarTextSize));
-        textObj.setFill(Color.WHITE);
+        textObj.setFont(Font.font (GUImanager.defaultFont, GUImanager.topBarTextSize));
+       // textObj.setStyle("-fx-font-weight: bold");
+        textObj.setFill(txtColor);
         this.setAlignment(Pos.CENTER_LEFT);
+        
+
+        
         this.getChildren().addAll(leftBox,
                                 new SeparatorInvisible(Orientation.HORIZONTAL, 5),
                                 textObj,

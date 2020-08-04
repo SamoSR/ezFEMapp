@@ -29,9 +29,9 @@ import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import serializableApp.objects.PropertyObjectList;
 import serializableApp.objects.SerializableObject;
@@ -92,7 +92,7 @@ public class ModelingScreen extends AppScreen{
         //BUTTON SHOW LEFT PANE
         PulseIconButtonCustom btnHamburger = new PulseIconButtonCustom("btnHamburger");
         btnHamburger.setBackGroundRectangle(42, 42, Color.TRANSPARENT, false);
-        btnHamburger.setIconFontawesome(FontAwesomeIcon.REORDER, GUImanager.appBarIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnHamburger.setIconFontawesome(FontAwesomeIcon.REORDER, GUImanager.topBarBurgerIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON));
         btnHamburger.setEventHandler((event)->{
            
             gui.getSidePanel().openPanel();
@@ -104,7 +104,7 @@ public class ModelingScreen extends AppScreen{
         //BUTTON LOADS
         PulseIconButtonCustom btnLoads = new PulseIconButtonCustom(MODE_LOADS);
         btnLoads.setBackGroundRectangle(35, 35, Color.TRANSPARENT, false);
-        btnLoads.setIconCustom(ShapeDrawer.drawArrowIcon(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT),18));
+        btnLoads.setIconCustom(ShapeDrawer.drawArrowIcon(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON),18));
         btnLoads.setEventHandler((event)->{  
             if(mode.equals(MODE_LOADS)){
                mode = MODE_NONE; 
@@ -119,7 +119,7 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom btnBlocks = new PulseIconButtonCustom(MODE_BLOCKS);
         btnBlocks.setBackGroundRectangle(35, 35, Color.TRANSPARENT, false);
         //btnBlocks.setIconFontawesome(FontAwesomeIcon.TH_LARGE, "24px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
-        btnBlocks.setIconCustom(ShapeDrawer.createBlockIcon(18, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT)));
+        btnBlocks.setIconCustom(ShapeDrawer.createBlockIcon(18, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON)));
         btnBlocks.setEventHandler((event)->{
             if(mode.equals(MODE_BLOCKS)){
                mode = MODE_NONE; 
@@ -135,7 +135,7 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom btnGrid = new PulseIconButtonCustom(MODE_BLOCKS);
         btnGrid.setBackGroundRectangle(35, 35, Color.TRANSPARENT, false);
         //btnGrid.setIconCustom(ShapeDrawer.createGridIcon(18,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT)));
-        btnGrid.setIconFontawesome(FontAwesomeIcon.COG, (GUImanager.toolBoxIconSize-2)+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
+        btnGrid.setIconFontawesome(FontAwesomeIcon.COG, (GUImanager.toolBoxIconSize-5)+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_NAVIGATION_BAR_ICON));
         btnGrid.setEventHandler((event)->{
             gui.loadScreen(GUImanager.SCREEN_SETTINGS);
         });
@@ -167,10 +167,10 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom btnPlay = new PulseIconButtonCustom("btnAnalysis");
         //btnPlay.setBackGroundCircle(40, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN), true);
         //btnPlay.setIconFontawesome(FontAwesomeIcon.PLAY, "20px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
-        btnPlay.setBackGroundCircle(50, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN), true);
+        btnPlay.setBackGroundCircle(50, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_FILLED), true);
  
        // btnPlay.setIconFontawesome(FontAwesomeIcon.PLAY, "20px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
-        btnPlay.setIconCustom(utilsGUI.create("Run", "Arial", 12, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT)));
+        btnPlay.setIconCustom(utilsGUI.create("Run", GUImanager.defaultFont, 12, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_FILLED_ICON)));
         //btnPlay.getIcon().setTranslateX(3);
         btnPlay.setEventHandler((event)->{
             gui.loadScreen(AnalysisScreen.ID);
@@ -181,8 +181,55 @@ public class ModelingScreen extends AppScreen{
         AnchorPane.setRightAnchor(btnPlay, 5.0);   
         
         
+        HBox hbox = new HBox(5);
+        //UNDO BUTTON
+        Circle c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c.setStrokeWidth(1);
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
+        PulseIconButtonCustom btnUndo = new PulseIconButtonCustom("btnUndo");
+        btnUndo.setIconFontawesome(FontAwesomeIcon.UNDO, GUImanager.toolBoxIconSize-12+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
+        btnUndo.setBackGroundCustom(c);
+        btnUndo.setEventHandler((event)->{        
+               //System.out.println("UNDO"); 
+               gui.getApp().getBlocks().undoLastAction();
+               canvas.updateRenderWithLastUndoAction();
+        });
+        btnUndo.construct();   
+        hbox.getChildren().add(btnUndo);
+
         
-  
+        //REDO BUTTON
+        c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c.setStrokeWidth(1);
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
+        PulseIconButtonCustom btnRedo = new PulseIconButtonCustom("btnRedo");
+        btnRedo.setIconFontawesome(FontAwesomeIcon.REPEAT, GUImanager.toolBoxIconSize-12+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
+        btnRedo.setBackGroundCustom(c);
+        btnRedo.setEventHandler((event)->{        
+               //System.out.println("UNDO"); 
+               gui.getApp().getBlocks().redoLastUndoAction();
+               canvas.updateRenderWithLastAction();
+        });
+        btnRedo.construct();   
+        hbox.getChildren().add(btnRedo);
+        
+        
+        //ICON ZOOM IN
+        c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c.setStrokeWidth(1);
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
+        PulseIconButtonCustom btnZoomExtend = new PulseIconButtonCustom("btnZoom");
+        btnZoomExtend.setIconFontawesome(FontAwesomeIcon.EXPAND, GUImanager.toolBoxIconSize-12+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
+        btnZoomExtend.setBackGroundCustom(c);
+        btnZoomExtend.setEventHandler((event)->{        
+               canvas.zoomExtends();
+        });
+        btnZoomExtend.construct();   
+        hbox.getChildren().add(btnZoomExtend);
+        
+        getCentralPane().getChildren().add(hbox);
+        AnchorPane.setBottomAnchor(hbox, 5.0);
+        AnchorPane.setLeftAnchor(hbox, 5.0); 
        
         createDrawModeButtons();
         createBlockEditTools();
@@ -196,6 +243,9 @@ public class ModelingScreen extends AppScreen{
     
     PulseIconButtonCustom cancelFirstTouchBtn;
     
+   
+    
+    
     public void createDrawModeButtons(){
         
         PropertyObjectList chunkList = getGUI().getApp().getBlocks().getProperty(BlockProject.PROPNAME_CHUNKSIZE_LIST).castoToPropertyObjectList();
@@ -208,11 +258,11 @@ public class ModelingScreen extends AppScreen{
         
         PropertyObjectList listChunks = getGUI().getApp().getBlocks().getProperty(BlockProject.PROPNAME_CHUNKSIZE_LIST).castoToPropertyObjectList();
         PulseIconButtonCustom btnSelectedChunkSize = new PulseIconButtonCustom("btnChunkSizeList");
-        btnSelectedChunkSize.createTextElement(selectedChunkSize.getID(), "Arial", 10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN));
+        btnSelectedChunkSize.createTextElement(selectedChunkSize.getID(), GUImanager.defaultFont, 10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON));
         btnSelectedChunkSize.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
         Circle c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnSelectedChunkSize.setIconCustom(c);
         btnSelectedChunkSize.setEventHandler((event)->{
                Bounds b = btnSelectedChunkSize.localToScreen(btnSelectedChunkSize.getBoundsInLocal());
@@ -223,7 +273,7 @@ public class ModelingScreen extends AppScreen{
                 PulseIconButtonCustom btn = new PulseIconButtonCustom("btnChunk"+obj.getID());
                 btn.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
                 btn.setIconCustom(new Rectangle(20,20,Color.TRANSPARENT));
-                btn.createTextElement(obj.getID(), "Arial", 14, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN));
+                btn.createTextElement(obj.getID(), GUImanager.defaultFont, 10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON));
                 btn.setEventHandler((event)->{
                     btnSelectedChunkSize.setText(obj.getID());
                     selectedChunk = obj.getID();
@@ -237,9 +287,9 @@ public class ModelingScreen extends AppScreen{
             
         c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         cancelFirstTouchBtn = new PulseIconButtonCustom("cancelFirstToch");
-        cancelFirstTouchBtn.setIconFontawesome(FontAwesomeIcon.REMOVE, GUImanager.toolBoxIconSize-8+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        cancelFirstTouchBtn.setIconFontawesome(FontAwesomeIcon.REMOVE, GUImanager.toolBoxIconSize-8+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         cancelFirstTouchBtn.setBackGroundCustom(c);
         cancelFirstTouchBtn.setEventHandler((event)->{           
                cancelFirstTouch();
@@ -247,13 +297,14 @@ public class ModelingScreen extends AppScreen{
         cancelFirstTouchBtn.construct();    
             
         //DRAW MODE
-        c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c = new Circle((GUImanager.hollowCircleButtonRadius),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         ContextMenu drawModeMenu = new ContextMenu(); 
         
         PulseIconButtonCustom btnDrawMode = new PulseIconButtonCustom("btnDrawMode");
-        btnDrawMode.setIconCustom(ShapeDrawer.createBlockIcon(10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+       // btnDrawMode.setIconCustom(ShapeDrawer.createBlockIcon(10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
+        btnDrawMode.setIconFontawesome(FontAwesomeIcon.HAND_ALT_UP, GUImanager.hollowCircleIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnDrawMode.setBackGroundCustom(c);
         btnDrawMode.setEventHandler((event)->{        
                Bounds b = btnDrawMode.localToScreen(btnDrawMode.getBoundsInLocal());
@@ -264,13 +315,14 @@ public class ModelingScreen extends AppScreen{
         
         
             PulseIconButtonCustom btnModeSingle = new PulseIconButtonCustom("btnDrawModeSingle");
-            btnModeSingle.setIconCustom(ShapeDrawer.createBlockIcon(10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
-            btnModeSingle.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
+            btnModeSingle.setIconFontawesome(FontAwesomeIcon.HAND_ALT_UP, GUImanager.hollowCircleIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
+            btnModeSingle.setBackGroundRectangle(GUImanager.hollowCircleButtonRadius*2, GUImanager.hollowCircleButtonRadius*2, Color.TRANSPARENT, false);
             btnModeSingle.setEventHandler((event)->{
                 drawMode = DRAW_MODE_SINGLE;
                 canvas.removeFirstTouch();
                 btnSelectedChunkSize.setVisible(true);
-                btnDrawMode.setIconCustom(ShapeDrawer.createBlockIcon(10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+                //btnDrawMode.setIconCustom(ShapeDrawer.createBlockIcon(10, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
+                btnDrawMode.setIconFontawesome(FontAwesomeIcon.HAND_ALT_UP, GUImanager.hollowCircleIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
                 btnDrawMode.construct();
                 cancelFirstTouch();
             });
@@ -279,12 +331,12 @@ public class ModelingScreen extends AppScreen{
             drawModeMenu.getItems().add(item1); 
             
             PulseIconButtonCustom btnModeRectangle = new PulseIconButtonCustom("btnDrawModeRactangle");
-            btnModeRectangle.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);    
-            btnModeRectangle.setIconCustom(ShapeDrawer.createDrawModeDoubleIcon(5, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnModeRectangle.setBackGroundRectangle(GUImanager.hollowCircleButtonRadius*2, GUImanager.hollowCircleButtonRadius*2, Color.TRANSPARENT, false);    
+            btnModeRectangle.setIconCustom(ShapeDrawer.createDrawModeDoubleIcon(5, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
             btnModeRectangle.setEventHandler((event)->{
                 drawMode = DRAW_MODE_RECTANGLE;
                 btnSelectedChunkSize.setVisible(false);
-                btnDrawMode.setIconCustom(ShapeDrawer.createDrawModeDoubleIcon(5, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+                btnDrawMode.setIconCustom(ShapeDrawer.createDrawModeDoubleIcon(5, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
                 btnDrawMode.construct();
             });
             btnModeRectangle.construct();
@@ -292,6 +344,8 @@ public class ModelingScreen extends AppScreen{
             drawModeMenu.getItems().add(item2);  
         
         
+     
+            
         
         HBox box = new HBox(5);
         box.getChildren().addAll(btnDrawMode, btnSelectedChunkSize);
@@ -414,6 +468,7 @@ public class ModelingScreen extends AppScreen{
         return selectedLoadDirection;
     }
     
+    Label selectedMaterialLabel;
     PulseIconButtonCustom btnSelectedMaterial;
     private void createBlockEditTools(){ 
         
@@ -423,7 +478,10 @@ public class ModelingScreen extends AppScreen{
         
         PropertyObjectList materialList = getGUI().getApp().getBlocks().getProperty(BlockProject.PROPNAME_MATERIAL_LIST).castoToPropertyObjectList();
         BlockMaterial selectedMaterial = (BlockMaterial)materialList.getObjectByID(selectedBlock);
- 
+        if(selectedMaterial==null){
+            selectedBlock="null";
+        }
+        
         PropertyObjectList chunkList = getGUI().getApp().getBlocks().getProperty(BlockProject.PROPNAME_CHUNKSIZE_LIST).castoToPropertyObjectList();
         ChunkSize selectedChunkSize = (ChunkSize)chunkList.getObjectByID(selectedChunk);
 
@@ -433,9 +491,9 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom btnConfigBlock = new PulseIconButtonCustom("btnConfigMaterials");
         Circle c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnConfigBlock.setBackGroundCustom(c);
-        btnConfigBlock.setIconFontawesome(FontAwesomeIcon.EDIT, GUImanager.toolBoxIconSize-9+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        btnConfigBlock.setIconFontawesome(FontAwesomeIcon.EDIT, GUImanager.toolBoxIconSize-9+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnConfigBlock.setEventHandler((event)->{
             getGUI().loadScreen(BlockProject.PROPNAME_MATERIAL_LIST);
         });
@@ -447,9 +505,9 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom btnClearBlocks = new PulseIconButtonCustom("btnClearBlocks"); 
         c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnClearBlocks.setBackGroundCustom(c);
-        btnClearBlocks.setIconFontawesome(FontAwesomeIcon.TRASH, GUImanager.toolBoxIconSize-8+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        btnClearBlocks.setIconFontawesome(FontAwesomeIcon.TRASH, GUImanager.toolBoxIconSize-8+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnClearBlocks.setEventHandler((event)->{
             String txt = "";
             if(selectedBlockType.equals(BLOCK_TYPE_SOLID)){
@@ -457,7 +515,7 @@ public class ModelingScreen extends AppScreen{
             }else if(selectedBlockType.equals(BLOCK_TYPE_SUPPORT)){
                 txt = selectedSupport;
             }
-            deleteCurrent.setIconCustom(utilsGUI.create(txt, "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteCurrent.setIconCustom(utilsGUI.create(txt, GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteCurrent.construct();
             Bounds b = btnClearBlocks.localToScreen(btnClearBlocks.getBoundsInLocal());
             deleteOptions.show(btnClearBlocks,(int)b.getMinX()-GUImanager.toolBoxIconSize,(int)b.getMaxY());
@@ -465,14 +523,14 @@ public class ModelingScreen extends AppScreen{
         btnClearBlocks.construct();
         
         
-            CustomMenuItem it = new CustomMenuItem(utilsGUI.create("Delete Blocks...", "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
-            deleteOptions.getItems().add(it); 
+            CustomMenuItem it = new CustomMenuItem(utilsGUI.create("Delete Blocks...", GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
+            //deleteOptions.getItems().add(it); 
             PulseIconButtonCustom deleteAll = new PulseIconButtonCustom("btnClearBlocks"); 
             deleteAll.setBackGroundCustom(new Rectangle(80,20,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
-            deleteAll.setIconCustom(utilsGUI.create("All", "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteAll.setIconCustom(utilsGUI.create("All", GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteAll.setEventHandler((event)->{
                 getGUI().getApp().getBlocks().clearAll();
-                canvas.updateBlockGeometries();
+                canvas.updateRenderWithLastAction();
                 //canvas.renderAllBlocks();
             });
             deleteAll.construct();
@@ -481,15 +539,18 @@ public class ModelingScreen extends AppScreen{
             
             
             deleteCurrent.setBackGroundCustom(new Rectangle(80,20,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
-            deleteCurrent.setIconCustom(utilsGUI.create(selectedBlock, "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteCurrent.setIconCustom(utilsGUI.create(selectedBlock, GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteCurrent.setEventHandler((event)->{
+                if(selectedBlock.equals("null")){
+                    return;
+                }
                 if(selectedBlockType.equals(BLOCK_TYPE_SOLID)){
                     getGUI().getApp().getBlocks().clearMaterial(selectedBlock);
-                    canvas.updateBlockGeometries();
+                    canvas.updateRenderWithLastAction();
                    // canvas.renderAllBlocks();
                 }else{
                     getGUI().getApp().getBlocks().clearSupport(selectedSupport);
-                    canvas.updateBlockGeometries();
+                    canvas.updateRenderWithLastAction();
                    // canvas.renderAllBlocks();
                 }
                 
@@ -501,18 +562,19 @@ public class ModelingScreen extends AppScreen{
         ContextMenu contextMenuMaterial = new ContextMenu();
         Circle c2 = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
         c2.setStrokeWidth(1);
-        c2.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c2.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnSelectedMaterial = new PulseIconButtonCustom("btnMaterialList");
         if(selectedBlockType.equals(BLOCK_TYPE_SOLID)){
             if(selectedMaterial==null){
                 btnSelectedMaterial.setIconCustom(ShapeDrawer.createNullBlockIcon(GUImanager.toolBoxIconSize-15, Color.LIGHTGREY,
-                        GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+                        GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
+               
             }else{
                 btnSelectedMaterial.setIconCustom(ShapeDrawer.createBlockIcon(GUImanager.toolBoxIconSize-15, selectedMaterial.getColor().getColorFX()));
             }
             
         }else{
-            btnSelectedMaterial.setIconCustom(ShapeDrawer.createSupportGeometry(selectedSupport, 16,2,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnSelectedMaterial.setIconCustom(ShapeDrawer.createSupportGeometry(selectedSupport, 16,2,Color.BLACK));
         }
         
         btnSelectedMaterial.setBackGroundCustom(c2);
@@ -529,9 +591,11 @@ public class ModelingScreen extends AppScreen{
 
         HBox matRow = new HBox();
         matRow.getChildren().add(createNullMaterialButton());
+        selectedMaterialLabel = new Label("Materials: ");
         
-        it = new CustomMenuItem(new HBox(new Label("Materials:")));
-        contextMenuMaterial.getItems().add(it); 
+        it = new CustomMenuItem(new HBox(selectedMaterialLabel));
+       // contextMenuMaterial.getItems().add(it); 
+       
         it = new CustomMenuItem(matRow);
         contextMenuMaterial.getItems().add(it); 
 
@@ -550,19 +614,24 @@ public class ModelingScreen extends AppScreen{
             } 
         }
         
-        it = new CustomMenuItem(new HBox(new Label("Supports:")));
+        
+        Line l = new Line(0,0,95,0);
+        l.setStroke(Color.BLACK);
+        l.setStrokeWidth(1);
+        it = new CustomMenuItem(l);
         contextMenuMaterial.getItems().add(it); 
         
         matRow = new HBox();
         for(String support:SupportBlock.getSupportTypes()){  
             PulseIconButtonCustom btnBlock = new PulseIconButtonCustom(support);
             btnBlock.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
-            btnBlock.setIconCustom(ShapeDrawer.createSupportGeometry(support, 16,2,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnBlock.setIconCustom(ShapeDrawer.createSupportGeometry(support, 16,2,Color.BLACK));
             btnBlock.setEventHandler((event)->{
                 selectedSupport = support;
-                btnSelectedMaterial.setIconCustom(ShapeDrawer.createSupportGeometry(selectedSupport, 16,2,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+                btnSelectedMaterial.setIconCustom(ShapeDrawer.createSupportGeometry(selectedSupport, 16,2,Color.BLACK));
                 btnSelectedMaterial.construct();
                 selectedBlockType = BLOCK_TYPE_SUPPORT;
+               // selectedMaterialLabel.setText("Selected: "+selectedSupport);
             });
             btnBlock.construct();
             matRow.getChildren().add(btnBlock);
@@ -596,6 +665,7 @@ public class ModelingScreen extends AppScreen{
             btnSelectedMaterial.construct();
             selectedBlock = mat.getID();
             selectedBlockType = BLOCK_TYPE_SOLID;
+           // selectedMaterialLabel.setText("Selected: "+selectedBlock);
         });
         btnBlock.construct();
         return btnBlock;
@@ -605,12 +675,13 @@ public class ModelingScreen extends AppScreen{
        
         PulseIconButtonCustom btnBlock = new PulseIconButtonCustom("null");
         btnBlock.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
-        btnBlock.setIconCustom(ShapeDrawer.createNullBlockIcon(GUImanager.toolBoxIconSize-15, Color.LIGHTGREY,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+        btnBlock.setIconCustom(ShapeDrawer.createNullBlockIcon(GUImanager.toolBoxIconSize-15, Color.LIGHTGREY,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
         btnBlock.setEventHandler((event)->{
-            btnSelectedMaterial.setIconCustom(ShapeDrawer.createNullBlockIcon(GUImanager.toolBoxIconSize-15, Color.LIGHTGREY,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnSelectedMaterial.setIconCustom(ShapeDrawer.createNullBlockIcon(GUImanager.toolBoxIconSize-15, Color.LIGHTGREY,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
             btnSelectedMaterial.construct();
             selectedBlock = "null";
             selectedBlockType = BLOCK_TYPE_SOLID;
+           // selectedMaterialLabel.setText("Selected: "+"null");
         });
         btnBlock.construct();
         return btnBlock;
@@ -622,11 +693,11 @@ public class ModelingScreen extends AppScreen{
         
         
         PulseIconButtonCustom btnConfigLoads = new PulseIconButtonCustom("btnConfigLoad");
-        Circle c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        Circle c = new Circle((GUImanager.hollowCircleButtonRadius),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnConfigLoads.setBackGroundCustom(c);
-        btnConfigLoads.setIconFontawesome(FontAwesomeIcon.EDIT, GUImanager.toolBoxIconSize-9+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        btnConfigLoads.setIconFontawesome(FontAwesomeIcon.EDIT, GUImanager.hollowCircleIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnConfigLoads.setEventHandler((event)->{
             getGUI().loadScreen(BlockProject.PROPNAME_LOADCASE_LIST);
         });
@@ -635,28 +706,27 @@ public class ModelingScreen extends AppScreen{
         PulseIconButtonCustom deleteCurrent = new PulseIconButtonCustom("btnClearBlocks"); 
         ContextMenu deleteOptions = new ContextMenu();
         PulseIconButtonCustom btnClearBlocks = new PulseIconButtonCustom("btnClearBlocks"); 
-        c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c = new Circle((GUImanager.hollowCircleButtonRadius),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnClearBlocks.setBackGroundCustom(c);
-        btnClearBlocks.setIconFontawesome(FontAwesomeIcon.TRASH, GUImanager.toolBoxIconSize-8+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        btnClearBlocks.setIconFontawesome(FontAwesomeIcon.TRASH, GUImanager.hollowCircleIconSize+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnClearBlocks.setEventHandler((event)->{
-            deleteCurrent.setIconCustom(utilsGUI.create(selectedLoadCase, "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteCurrent.setIconCustom(utilsGUI.create(selectedLoadCase, GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteCurrent.construct();
             Bounds b = btnClearBlocks.localToScreen(btnClearBlocks.getBoundsInLocal());
             deleteOptions.show(btnClearBlocks,(int)b.getMinX()-GUImanager.toolBoxIconSize,(int)b.getMaxY());
         });
         btnClearBlocks.construct();
         
-            CustomMenuItem it = new CustomMenuItem(utilsGUI.create("Delete Loads...", "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
-            deleteOptions.getItems().add(it); 
+            CustomMenuItem it = new CustomMenuItem(utilsGUI.create("Delete Loads...", GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
         
             PulseIconButtonCustom deleteAll = new PulseIconButtonCustom("btnClearBlocks"); 
             deleteAll.setBackGroundCustom(new Rectangle(80,20,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
-            deleteAll.setIconCustom(utilsGUI.create("All", "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteAll.setIconCustom(utilsGUI.create("All", GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteAll.setEventHandler((event)->{
                 getGUI().getApp().getBlocks().removeLoadsAll();
-                //canvas.renderAllBlocks();
+                canvas.updateRenderWithLastAction();
             });
             deleteAll.construct();
             it = new CustomMenuItem(deleteAll);
@@ -664,10 +734,13 @@ public class ModelingScreen extends AppScreen{
             
             
             deleteCurrent.setBackGroundCustom(new Rectangle(80,20,GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
-            deleteCurrent.setIconCustom(utilsGUI.create(selectedLoadCase, "Arial", 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
+            deleteCurrent.setIconCustom(utilsGUI.create(selectedLoadCase, GUImanager.defaultFont, 11, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT))); 
             deleteCurrent.setEventHandler((event)->{
+                if(selectedLoadCase.equals("null")){
+                    return;
+                }
                 getGUI().getApp().getBlocks().removeLoadsLoadCase(selectedLoadCase);
-                //canvas.renderAllBlocks();
+                canvas.updateRenderWithLastAction();
             });
             deleteCurrent.construct();
             it = new CustomMenuItem(deleteCurrent);
@@ -676,20 +749,23 @@ public class ModelingScreen extends AppScreen{
         
         PropertyObjectList loadCasesList = getGUI().getApp().getBlocks().getProperty(BlockProject.PROPNAME_LOADCASE_LIST).castoToPropertyObjectList();
         LoadCaseBlock selectedCase = (LoadCaseBlock)loadCasesList.getObjectByID(this.selectedLoadCase);
+        if(selectedCase==null){
+            selectedLoadCase="null";
+        }
         
         //BUTTON FOR LOAD CASE ////////////////////////////////////////////
-        Circle c2 = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        Circle c2 = new Circle((GUImanager.hollowCircleButtonRadius),Color.TRANSPARENT);
         c2.setStrokeWidth(1);
-        c2.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c2.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         ContextMenu loadCasesMenu = new ContextMenu();
 
         
         PulseIconButtonCustom btnSelectedLoadCase = new PulseIconButtonCustom("btnLoadList");
         btnSelectedLoadCase.setBackGroundCustom(c2);
         if(selectedCase==null){
-            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.hollowCircleIconSize/3, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)));
         }else{
-            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, selectedCase.getColor().getColorFX()));
+            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.hollowCircleIconSize/3, selectedCase.getColor().getColorFX()));
         }
        
         btnSelectedLoadCase.setEventHandler((event)->{
@@ -701,10 +777,10 @@ public class ModelingScreen extends AppScreen{
         
         // NULL LOAD CASE BUTTON
         PulseIconButtonCustom btnLcaseNull = new PulseIconButtonCustom("BtnNullLoadCase");
-        btnLcaseNull.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
-        btnLcaseNull.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+        btnLcaseNull.setBackGroundRectangle(GUImanager.hollowCircleButtonRadius*2, GUImanager.hollowCircleButtonRadius*2, Color.TRANSPARENT, false);
+        btnLcaseNull.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.hollowCircleIconSize/3, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)));
         btnLcaseNull.setEventHandler((event)->{
-            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)));
+            btnSelectedLoadCase.setIconCustom(ShapeDrawer.createNullLoadCaseIcon(GUImanager.hollowCircleIconSize/3, Color.LIGHTGRAY, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)));
             btnSelectedLoadCase.construct();
             selectedLoadCase = "null";
         });
@@ -717,10 +793,10 @@ public class ModelingScreen extends AppScreen{
             for(SerializableObject obj:loadCasesList.getObjectList()){  
                 LoadCaseBlock lcase = (LoadCaseBlock)obj;
                 PulseIconButtonCustom btnBlock = new PulseIconButtonCustom(obj.getID());
-                btnBlock.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
-                btnBlock.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, lcase.getColor().getColorFX()));
+                btnBlock.setBackGroundRectangle(GUImanager.hollowCircleButtonRadius*2, GUImanager.hollowCircleButtonRadius*2, Color.TRANSPARENT, false);
+                btnBlock.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.hollowCircleIconSize/3, lcase.getColor().getColorFX()));
                 btnBlock.setEventHandler((event)->{
-                    btnSelectedLoadCase.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.toolBoxIconSize/2-7, lcase.getColor().getColorFX()));
+                    btnSelectedLoadCase.setIconCustom(ShapeDrawer.createLoadCaseIcon(GUImanager.hollowCircleIconSize/3, lcase.getColor().getColorFX()));
                     btnSelectedLoadCase.construct();
                     selectedLoadCase = obj.getID();
                 });
@@ -734,13 +810,13 @@ public class ModelingScreen extends AppScreen{
         
         //BUTTON FOR LOAD DIRECTION ////////////////////////////////////////////
         PulseIconButtonCustom btnLoadDirection = new PulseIconButtonCustom("btnDirection");
-        c = new Circle((GUImanager.toolBoxIconSize/2),Color.TRANSPARENT);
+        c = new Circle((GUImanager.hollowCircleButtonRadius),Color.TRANSPARENT);
         c.setStrokeWidth(1);
-        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+        c.setStroke(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW)); 
         btnLoadDirection.setBackGroundCustom(c);
         btnLoadDirection.setIconFontawesome(getDirectionIcon(selectedLoadDirection), 
-                (GUImanager.toolBoxIconSize-12)+"px",
-                 GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN)); 
+                (GUImanager.hollowCircleIconSize)+"px",
+                 GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON)); 
         btnLoadDirection.setEventHandler((event)->{
             Bounds b = btnLoadDirection.localToScreen(btnLoadDirection.getBoundsInLocal());
             loadDirections.show(btnLoadDirection,(int)b.getMinX()-5,(int)b.getMaxY());
@@ -748,7 +824,7 @@ public class ModelingScreen extends AppScreen{
         btnLoadDirection.construct();
         ////////////////////////////////////////////////////////////////////////
         
-            //CustomMenuItem item = new CustomMenuItem(utilsGUI.create("Direction", "Arial", 12, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
+            //CustomMenuItem item = new CustomMenuItem(utilsGUI.create("Direction", GUImanager.defaultFont, 12, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND_TEXT)));
             //loadDirections.getItems().add(item); 
             
             String[] directions = new String[]{BlockDistLoad.LOAD_DIRECTION_UP,
@@ -758,14 +834,14 @@ public class ModelingScreen extends AppScreen{
             for(String dir:directions){
                 //DIRECTION BUTTONS
                 PulseIconButtonCustom btn = new PulseIconButtonCustom(dir);
-                btn.setBackGroundRectangle(GUImanager.toolBoxIconSize, GUImanager.toolBoxIconSize, Color.TRANSPARENT, false);
-                btn.setIconFontawesome(getDirectionIcon(dir), (GUImanager.toolBoxIconSize-12)+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN));
+                btn.setBackGroundRectangle(GUImanager.hollowCircleButtonRadius*2, GUImanager.hollowCircleButtonRadius*2, Color.TRANSPARENT, false);
+                btn.setIconFontawesome(getDirectionIcon(dir), (GUImanager.toolBoxIconSize-12)+"px",GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON));
                 btn.setEventHandler((event)->{
                     selectedLoadDirection = dir;
                     //System.out.println("direction: "+dir);
                     btnLoadDirection.setIconFontawesome(getDirectionIcon(selectedLoadDirection), 
-                           (GUImanager.toolBoxIconSize-12)+"px",
-                            GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN));
+                           (GUImanager.hollowCircleIconSize)+"px",
+                            GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BTN_CIRCLE_HOLLOW_ICON));
                     btnLoadDirection.construct();
                 });
                 btn.construct();
@@ -853,14 +929,19 @@ public class ModelingScreen extends AppScreen{
     
     @Override
     public void loadScreen(){
+        
+       // getGUI().getApp().getBlocks().referenceParentToProperties();
+       // getGUI().getApp().getBlocks().initializeReferenceProperties();
+       // getGUI().getApp().getBlocks().updateReferenceProperties();
+        
         cancelFirstTouch();
         //this screen could have been updated in an other screen, so updated these elements when loading this screen
         createBlockEditTools(); 
         createLoadEditTools();
         updateMode();
+        canvas.zoomExtends();
         canvas.clearAndRender();
-       
-        //canvas.renderAllBlocks();
+
     }
     
     /*

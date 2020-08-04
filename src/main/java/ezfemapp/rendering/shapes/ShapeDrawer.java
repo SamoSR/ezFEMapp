@@ -9,18 +9,24 @@ package ezfemapp.rendering.shapes;
 import ezfemapp.blockProject.SupportBlock;
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
+import ezfemapp.rendering.canvas.BlockRenderer;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.TriangleMesh;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import org.fxyz3d.geometry.Point3D;
 
 
 /**
@@ -311,11 +317,11 @@ public class ShapeDrawer {
     public static Node MathSubscriptIcon(String number, String subscript){
         StackPane pane = new StackPane();
         Text t1 = new Text(number);
-        t1.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        t1.setFont(Font.font(GUImanager.defaultFont, FontWeight.BOLD, 20));
         t1.setFill(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         t1.setTranslateX(-6);
         Text t2 = new Text(subscript);
-        t2.setFont(new Font("Arial", 12));
+        t2.setFont(new Font(GUImanager.defaultFont, 12));
         t2.setFill(GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_MAIN_TEXT));
         t2.setTranslateX(+t1.getBoundsInParent().getMaxX());
         t2.setTranslateY(4);       
@@ -445,6 +451,76 @@ public class ShapeDrawer {
         }*/
         
         return blockGeometry;
+    }
+    
+    public static Node drawPlane2(Point3D p1, Point3D p2, Point3D p3, Point3D p4, Color colorLines){
+    
+        PhongMaterial matLines = new PhongMaterial();
+        matLines.setDiffuseColor(colorLines);
+
+        //FILL SHAPE
+        TriangleMesh mesh2 = new TriangleMesh();
+        mesh2.getPoints().addAll(
+            (float)p1.x,  (float)p1.y,    (float)p1.z,          
+            (float)p2.x,  (float)p2.y,    (float)p2.z,                 
+            (float)p3.x,  (float)p3.y,    (float)p3.z,       
+            (float)p4.x,  (float)p4.y,    (float)p4.z                
+        );
+        
+        mesh2.getFaces().addAll(
+            0,0,  1,0,  1,0,         
+            1,0,  2,0,  2,0,
+            2,0,  3,0,  3,0,
+            3,0,  0,0,  0,0  
+        ); 
+        
+        mesh2.getTexCoords().addAll(0,0);
+        
+        MeshView planeGeom2 = new MeshView(mesh2);
+        planeGeom2.setDrawMode(DrawMode.LINE);
+        planeGeom2.setMaterial(matLines);
+ 
+        return planeGeom2;             
+    }
+    
+    public static Node drawPlane(Point3D p1, Point3D p2, Point3D p3, Point3D p4, Color colorLines){
+    
+        Group g = new Group();
+        
+        PhongMaterial matLines = new PhongMaterial();
+        matLines.setDiffuseColor(colorLines);
+
+        Line l1 = BlockRenderer.drawLine(new Point2D(p1.x,p1.y), new Point2D(p2.x,p2.y), colorLines, 1.5);
+        Line l2 = BlockRenderer.drawLine(new Point2D(p2.x,p2.y), new Point2D(p3.x,p3.y), colorLines, 1.5);
+        Line l3 = BlockRenderer.drawLine(new Point2D(p3.x,p3.y), new Point2D(p4.x,p4.y), colorLines, 1.5);
+        Line l4 = BlockRenderer.drawLine(new Point2D(p4.x,p4.y), new Point2D(p1.x,p1.y), colorLines, 1.5);
+        
+        g.getChildren().addAll(l1,l2,l3,l4);
+        
+        /*
+        //FILL SHAPE
+        TriangleMesh mesh2 = new TriangleMesh();
+        mesh2.getPoints().addAll(
+            (float)p1.x,  (float)p1.y,    (float)p1.z,          
+            (float)p2.x,  (float)p2.y,    (float)p2.z,                 
+            (float)p3.x,  (float)p3.y,    (float)p3.z,       
+            (float)p4.x,  (float)p4.y,    (float)p4.z                
+        );
+        
+        mesh2.getFaces().addAll(
+            0,0,  1,0,  1,0,         
+            1,0,  2,0,  2,0,
+            2,0,  3,0,  3,0,
+            3,0,  0,0,  0,0  
+        ); 
+        
+        mesh2.getTexCoords().addAll(0,0);
+        
+        MeshView planeGeom2 = new MeshView(mesh2);
+        planeGeom2.setDrawMode(DrawMode.LINE);
+        planeGeom2.setMaterial(matLines);*/
+ 
+        return g;             
     }
             
             

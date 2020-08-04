@@ -31,6 +31,7 @@ public class PropertyObjectList extends Property{
     
     String objectsType;
     List<SerializableObject> objects;
+    int maxItems = Integer.MAX_VALUE;
     
     //INSTEAD OF THE "ID" PROPERTY OF THE ITEMS STORED IN THIS LIST, ANOTHER OBJECTS ID WILL BE USED
     //private boolean bindedID;
@@ -54,6 +55,14 @@ public class PropertyObjectList extends Property{
     public PropertyObjectList getBindedIDpropList(){
         return bindedList;
     }*/
+    
+    
+    public void setMaxItems(int maxItems){
+       this.maxItems = maxItems;
+    }
+    public int getMaxItems(){
+        return maxItems;
+    }
     
     public SerializableObject getObjectByID(String id){ 
         /*
@@ -88,7 +97,9 @@ public class PropertyObjectList extends Property{
     public void addObjectAnyID(SerializableObject obj){
         //DONT CHECK FOR IDS (OBJECTS WITH SAME ID ALLOWED)
         if(obj.getObjectType().equals(objectsType)){
-            objects.add(obj);
+            if(objects.size()<maxItems){
+                 objects.add(obj);
+            }  
         }  
     }
     
@@ -100,7 +111,9 @@ public class PropertyObjectList extends Property{
             }
         }
         if(obj.getObjectType().equals(objectsType)){
-            objects.add(obj);
+            if(objects.size()<maxItems){
+                 objects.add(obj);
+            }  
             return true;
         }    
         return false;
