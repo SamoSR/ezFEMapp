@@ -11,8 +11,8 @@ import ezfemapp.gui.mdcomponents.HtmlText;
 import ezfemapp.gui.mdcomponents.PulseIconButtonCustom;
 import ezfemapp.gui.screen.AppScreen;
 import ezfemapp.gui.theme.ColorTheme;
-import ezfemapp.main.BasicApp;
 import ezfemapp.main.GUImanager;
+import ezfemapp.services.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
@@ -45,8 +45,9 @@ public class AboutScreen extends AppScreen{
         
         String iconPath = this.getClass().getResource("/icons/zf250x250.png").toExternalForm(); 
         HtmlText htmlText = new HtmlText();
-        htmlText.addLine(HtmlText.bold(BasicApp.APP_NAME));
-        htmlText.addLine(HtmlText.bold(BasicApp.APP_VERSION));
+        BasicApp app = BasicAppFactory.getInstance().getBasicApp();
+        htmlText.addLine(HtmlText.bold(app.APP_NAME));
+        htmlText.addLine(HtmlText.bold(app.APP_VERSION));
         htmlText.breakLine();
         htmlText.addLine(HtmlText.bold("Version notes: ")+"First beta version released for testing in multiple devices. Some errors, bugs and instabilities are expected, be patient :)");
         htmlText.breakLine();

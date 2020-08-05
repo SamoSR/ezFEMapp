@@ -10,11 +10,17 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import ezfemapp.services.BasicAppFactory;
 
 public class App extends Application{
     @Override
     public void start(Stage primaryStage) {
-        App_Desktop app = new App_Desktop(primaryStage);   
+    	
+    	BasicAppFactory app = BasicAppFactory.getInstance();
+    	
+    	app.initGUI(primaryStage);
+    	
+        //App_Desktop app = new App_Desktop(primaryStage);   
     }
 
     public static void main(String[] args) {

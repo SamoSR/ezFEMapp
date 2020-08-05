@@ -14,7 +14,7 @@ import ezfemapp.gui.mdcomponents.TextIconButton;
 import ezfemapp.gui.mdcomponents.utilsGUI;
 import ezfemapp.gui.theme.ColorTheme;
 import ezfemapp.main.GUImanager;
-import ezfemapp.main.BasicApp;
+import ezfemapp.services.*;
 import javafx.event.EventHandler;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -73,7 +73,8 @@ public class SidePane extends JFXDrawer{
         });
       
         StackPane pane = new StackPane();
-        Text txt = utilsGUI.create(BasicApp.APP_NAME, GUImanager.defaultFont, 14, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND));
+        BasicApp app = BasicAppFactory.getInstance().getBasicApp();
+        Text txt = utilsGUI.create(app.APP_NAME, GUImanager.defaultFont, 14, GUImanager.colorTheme.getColorFX(ColorTheme.COLOR_BACKGROUND));
         pane.getChildren().add(txt);
         txt.setTranslateY(50+5);
         
