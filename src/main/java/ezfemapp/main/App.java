@@ -17,10 +17,7 @@ public class App extends Application{
     public void start(Stage primaryStage) {
     	
     	BasicAppFactory app = BasicAppFactory.getInstance();
-    	
     	app.initGUI(primaryStage);
-    	
-        //App_Desktop app = new App_Desktop(primaryStage);   
     }
 
     public static void main(String[] args) {
